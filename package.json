@@ -9,11 +9,21 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@resvg/resvg-wasm": "2.6.2",
+    "clsx": "2.1.1",
+    "lucide-react": "0.555.0",
     "next": "16.0.5",
+    "prism-react-renderer": "2.4.1",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-colorful": "5.6.1",
+    "react-dom": "19.2.0",
+    "satori": "0.18.3",
+    "sonner": "2.0.7",
+    "tailwind-merge": "3.4.0",
+    "zustand": "5.0.8"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "4.20251128.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

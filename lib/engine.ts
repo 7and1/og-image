@@ -1,0 +1,215 @@
+import satori from "satori";
+import { Resvg, initWasm } from "@resvg/resvg-wasm";
+import type { ReactNode } from "react";
+
+// Singleton state for WASM and font initialization
+let wasmInitialized = false;
+let wasmInitializing: Promise<void> | null = null;
+let fontBuffer: ArrayBuffer | null = null;
+let fontLoading: Promise<ArrayBuffer> | null = null;
+
+/**
+ * Initializes the WASM module
+ * Uses singleton pattern to ensure it's only initialized once
+ */
+async function initializeWasm(): Promise<void> {
+  if (wasmInitialized) return;
+
+  if (wasmInitializing) {
+    await wasmInitializing;
+    return;
+  }
+
+  wasmInitializing = (async () => {
+    try {
+      // Fetch WASM file from public directory
+      const wasmResponse = await fetch("/resvg.wasm");
+      if (!wasmResponse.ok) {
+        throw new Error(`Failed to fetch WASM: ${wasmResponse.status}`);
+      }
+
+      const wasmBuffer = await wasmResponse.arrayBuffer();
+      await initWasm(wasmBuffer);
+      wasmInitialized = true;
+      console.log("[og-engine] WASM initialized successfully");
+    } catch (error) {
+      wasmInitializing = null;
+      console.error("[og-engine] WASM initialization failed:", error);
+      throw new Error(
+        "Failed to initialize image engine. Please refresh the page."
+      );
+    }
+  })();
+
+  await wasmInitializing;
+}
+
+/**
+ * Loads the Inter Bold font
+ * Uses singleton pattern with caching
+ */
+async function loadFont(): Promise<ArrayBuffer> {
+  if (fontBuffer) return fontBuffer;
+
+  if (fontLoading) {
+    return fontLoading;
+  }
+
+  fontLoading = (async () => {
+    try {
+      const response = await fetch("/fonts/Inter-Bold.ttf");
+      if (!response.ok) {
+        throw new Error(`Failed to fetch font: ${response.status}`);
+      }
+
+      fontBuffer = await response.arrayBuffer();
+      console.log("[og-engine] Font loaded successfully");
+      return fontBuffer;
+    } catch (error) {
+      fontLoading = null;
+      console.error("[og-engine] Font loading failed:", error);
+      throw new Error("Failed to load font. Please refresh the page.");
+    }
+  })();
+
+  return fontLoading;
+}
+
+/**
+ * Ensures the engine is ready for rendering
+ */
+export async function ensureEngineReady(): Promise<void> {
+  await Promise.all([initializeWasm(), loadFont()]);
+}
+
+/**
+ * Configuration options for rendering
+ */
+export interface RenderOptions {
+  width?: number;
+  height?: number;
+  scale?: number;
+}
+
+const DEFAULT_OPTIONS: Required<RenderOptions> = {
+  width: 1200,
+  height: 630,
+  scale: 1,
+};
+
+/**
+ * Renders a React element to a PNG blob URL
+ *
+ * Pipeline:
+ * 1. React Element → Satori → SVG string
+ * 2. SVG string → Resvg (WASM) → PNG buffer
+ * 3. PNG buffer → Blob URL
+ *
+ * @param node - React element to render (must use inline styles)
+ * @param options - Render options (width, height, scale)
+ * @returns Promise<string> - Blob URL for the generated PNG
+ */
+export async function renderToBlob(
+  node: ReactNode,
+  options: RenderOptions = {}
+): Promise<string> {
+  const opts = { ...DEFAULT_OPTIONS, ...options };
+  const startTime = performance.now();
+
+  // Ensure engine is initialized
+  await ensureEngineReady();
+
+  // Step 1: React → SVG using Satori
+  const svg = await satori(node as React.ReactNode, {
+    width: opts.width,
+    height: opts.height,
+    fonts: [
+      {
+        name: "Inter",
+        data: fontBuffer!,
+        weight: 700,
+        style: "normal",
+      },
+    ],
+  });
+
+  const satoriTime = performance.now();
+  console.log(`[og-engine] Satori: ${(satoriTime - startTime).toFixed(2)}ms`);
+
+  // Step 2: SVG → PNG using Resvg WASM
+  const resvg = new Resvg(svg, {
+    fitTo: {
+      mode: "width",
+      value: opts.width * opts.scale,
+    },
+  });
+
+  const pngData = resvg.render();
+  const pngBuffer = pngData.asPng();
+
+  const resvgTime = performance.now();
+  console.log(`[og-engine] Resvg: ${(resvgTime - satoriTime).toFixed(2)}ms`);
+
+  // Step 3: Create Blob URL
+  const blob = new Blob([new Uint8Array(pngBuffer)], { type: "image/png" });
+  const url = URL.createObjectURL(blob);
+
+  console.log(`[og-engine] Total: ${(performance.now() - startTime).toFixed(2)}ms`);
+
+  return url;
+}
+
+/**
+ * Renders a React element directly to a PNG Blob
+ * Useful when you need the blob itself (e.g., for download)
+ */
+export async function renderToPngBlob(
+  node: ReactNode,
+  options: RenderOptions = {}
+): Promise<Blob> {
+  const opts = { ...DEFAULT_OPTIONS, ...options };
+
+  await ensureEngineReady();
+
+  const svg = await satori(node as React.ReactNode, {
+    width: opts.width,
+    height: opts.height,
+    fonts: [
+      {
+        name: "Inter",
+        data: fontBuffer!,
+        weight: 700,
+        style: "normal",
+      },
+    ],
+  });
+
+  const resvg = new Resvg(svg, {
+    fitTo: {
+      mode: "width",
+      value: opts.width * opts.scale,
+    },
+  });
+
+  const pngData = resvg.render();
+  const pngBuffer = pngData.asPng();
+
+  return new Blob([new Uint8Array(pngBuffer)], { type: "image/png" });
+}
+
+/**
+ * Checks if the engine is ready without blocking
+ */
+export function isEngineReady(): boolean {
+  return wasmInitialized && fontBuffer !== null;
+}
+
+/**
+ * Preloads the engine in the background
+ * Call this early in the app lifecycle to minimize first-render delay
+ */
+export function preloadEngine(): void {
+  ensureEngineReady().catch((error) => {
+    console.warn("[og-engine] Preload failed:", error);
+  });
+}

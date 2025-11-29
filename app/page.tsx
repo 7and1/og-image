@@ -1,65 +1,168 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useMemo, useRef } from "react";
+import { useStore, useActions } from "@/store/useStore";
+import { getTemplateComponent } from "@/templates";
+import { renderToBlob, preloadEngine } from "@/lib/engine";
+import { EditorPanel } from "@/components/editor";
+import { PreviewCanvas, SocialPreview } from "@/components/preview";
+import { ExportSection } from "@/components/export";
+import { ContentSection } from "@/components/home/ContentSection";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui";
 
 export default function Home() {
+  const {
+    title,
+    description,
+    icon,
+    template,
+    backgroundColor,
+    textColor,
+    accentColor,
+    previewUrl,
+  } = useStore();
+
+  const { setUI } = useActions();
+  const previousUrlRef = useRef<string | null>(null);
+
+  // Preload engine on mount
+  useEffect(() => {
+    preloadEngine();
+  }, []);
+
+  // Memoize the template element
+  const templateElement = useMemo(() => {
+    const TemplateComponent = getTemplateComponent(template);
+    return (
+      <TemplateComponent
+        title={title}
+        description={description}
+        icon={icon}
+        backgroundColor={backgroundColor}
+        textColor={textColor}
+        accentColor={accentColor}
+      />
+    );
+  }, [title, description, icon, template, backgroundColor, textColor, accentColor]);
+
+  // Debounced render effect
+  useEffect(() => {
+    setUI({ isGenerating: true, error: null });
+
+    const timer = setTimeout(async () => {
+      try {
+        const url = await renderToBlob(templateElement);
+
+        // Revoke previous URL to prevent memory leak
+        if (previousUrlRef.current) {
+          URL.revokeObjectURL(previousUrlRef.current);
+        }
+
+        previousUrlRef.current = url;
+        setUI({ previewUrl: url, isGenerating: false });
+      } catch (error) {
+        console.error("Render failed:", error);
+        setUI({
+          error: error instanceof Error ? error.message : "Render failed",
+          isGenerating: false,
+        });
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [templateElement, setUI]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (previousUrlRef.current) {
+        URL.revokeObjectURL(previousUrlRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <>
+      {/* H1 - Core keyword for SEO */}
+      <div className="bg-neutral-950 border-b border-neutral-800">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight text-center">
+            Free OG Image Generator
+            <span className="font-normal text-neutral-400"> — Create stunning social preview images in seconds</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </div>
+
+      {/* Generator Tool */}
+      <div id="generator" className="flex min-h-[calc(100vh-200px)]">
+        {/* Left Panel - Editor */}
+        <EditorPanel />
+
+        {/* Right Panel - Preview & Export */}
+        <div className="flex-1 overflow-y-auto bg-neutral-950 p-6 lg:p-8">
+          <div className="mx-auto max-w-4xl space-y-8">
+            {/* Main Preview */}
+            <section>
+              <h2 className="mb-4 text-sm font-medium text-neutral-400">
+                Preview
+              </h2>
+              <PreviewCanvas />
+            </section>
+
+            {/* Social Previews */}
+            <section>
+              <h2 className="mb-4 text-sm font-medium text-neutral-400">
+                Social Media Previews
+              </h2>
+              <Tabs defaultValue="twitter">
+                <TabsList>
+                  <TabsTrigger value="twitter">Twitter</TabsTrigger>
+                  <TabsTrigger value="linkedin">LinkedIn</TabsTrigger>
+                  <TabsTrigger value="facebook">Facebook</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="twitter">
+                  <SocialPreview
+                    platform="twitter"
+                    title={title}
+                    description={description}
+                    imageUrl={previewUrl}
+                  />
+                </TabsContent>
+
+                <TabsContent value="linkedin">
+                  <SocialPreview
+                    platform="linkedin"
+                    title={title}
+                    description={description}
+                    imageUrl={previewUrl}
+                  />
+                </TabsContent>
+
+                <TabsContent value="facebook">
+                  <SocialPreview
+                    platform="facebook"
+                    title={title}
+                    description={description}
+                    imageUrl={previewUrl}
+                  />
+                </TabsContent>
+              </Tabs>
+            </section>
+
+            {/* Export Section */}
+            <section>
+              <h2 className="mb-4 text-sm font-medium text-neutral-400">
+                Export
+              </h2>
+              <ExportSection />
+            </section>
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+
+      {/* Educational Content Section - SEO */}
+      <ContentSection />
+    </>
   );
 }

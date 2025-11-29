@@ -1,0 +1,9 @@
+# https://og-image.org robots.txt
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://og-image.org/sitemap.xml
+
+# Crawl-delay for politeness
+Crawl-delay: 1

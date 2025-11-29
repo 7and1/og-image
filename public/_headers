@@ -1,0 +1,25 @@
+# WASM files - required for Firefox compatibility
+/resvg.wasm
+  Content-Type: application/wasm
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+# Font files - long cache
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+# Static assets from Next.js
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML pages - allow revalidation
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Security headers for all routes
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
