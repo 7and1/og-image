@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Core Tools -->
   <url>
     <loc>https://og-image.org/</loc>
     <changefreq>weekly</changefreq>
@@ -26,6 +27,55 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://og-image.org/automations</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Template Pages -->
+  <url>
+    <loc>https://og-image.org/templates/gradient</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://og-image.org/templates/minimal</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://og-image.org/templates/modern</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://og-image.org/templates/bold</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://og-image.org/templates/split</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://og-image.org/templates/glass</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://og-image.org/templates/startup</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://og-image.org/templates/blog</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Documentation -->
+  <url>
     <loc>https://og-image.org/docs</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -35,6 +85,18 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://og-image.org/docs/dynamic-og</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://og-image.org/docs/api</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Framework Guides -->
   <url>
     <loc>https://og-image.org/docs/guides/nextjs</loc>
     <changefreq>monthly</changefreq>
@@ -50,6 +112,8 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- Platform Guides -->
   <url>
     <loc>https://og-image.org/docs/platforms/twitter</loc>
     <changefreq>monthly</changefreq>
@@ -64,10 +128,5 @@
     <loc>https://og-image.org/docs/platforms/facebook</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://og-image.org/docs/api</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
 </urlset>

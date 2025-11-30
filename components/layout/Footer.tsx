@@ -23,7 +23,7 @@ export function Footer() {
               Contact
             </a>
             <a
-              href="https://github.com/anthropics/claude-code"
+              href="https://github.com/7and1/og-image"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-white transition-colors"

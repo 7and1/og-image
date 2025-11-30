@@ -85,11 +85,13 @@ export default function Home() {
     <>
       {/* H1 - Core keyword for SEO */}
       <div className="bg-neutral-950 border-b border-neutral-800">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight text-center">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8 text-center">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight">
             Free OG Image Generator
-            <span className="font-normal text-neutral-400"> — Create stunning social preview images in seconds</span>
           </h1>
+          <p className="mt-3 text-base sm:text-lg text-neutral-400">
+            Create stunning social preview images in seconds
+          </p>
         </div>
       </div>
 

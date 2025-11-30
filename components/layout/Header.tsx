@@ -49,7 +49,7 @@ export function Header() {
         {/* Right side */}
         <div className="flex items-center gap-2">
           <a
-            href="https://github.com/anthropics/claude-code"
+            href="https://github.com/7and1/og-image"
             target="_blank"
             rel="noopener noreferrer"
             className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
