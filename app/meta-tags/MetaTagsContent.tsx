@@ -291,6 +291,186 @@ export default function MetaTagsContent() {
             </Card>
           </div>
         </div>
+
+        {/* SEO Content Section */}
+        <section className="mt-24 pt-16 border-t border-neutral-800">
+          <h2 className="text-3xl font-bold text-white mb-6">
+            Understanding Meta Tags for Social Media
+          </h2>
+          <div className="prose prose-invert prose-neutral max-w-none">
+            <p className="text-lg text-neutral-300 leading-relaxed mb-6">
+              Meta tags are the invisible instructions that tell search engines and
+              social platforms how to display your content. When you share a link on
+              Twitter or LinkedIn, these platforms look for specific meta tags to
+              create that preview card. Get them wrong—or leave them out—and your
+              carefully crafted content shows up as a boring text link.
+            </p>
+            <p className="text-neutral-400 leading-relaxed mb-6">
+              The Open Graph protocol, originally developed by Facebook, has become
+              the standard for social media previews. Twitter has its own tags too,
+              but smart implementations include both to cover all platforms.
+            </p>
+          </div>
+
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Essential Meta Tags Explained
+            </h2>
+            <div className="space-y-6">
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <h3 className="font-semibold text-white mb-2 font-mono text-blue-400">og:title</h3>
+                <p className="text-neutral-400 text-sm mb-3">
+                  The headline that appears in social previews. Should be compelling and
+                  under 60 characters to avoid truncation. This is different from your
+                  SEO title tag—you can optimize each separately.
+                </p>
+                <pre className="bg-neutral-950 p-3 rounded-lg overflow-x-auto text-sm">
+                  <code className="text-green-400">{`<meta property="og:title" content="Your Page Title" />`}</code>
+                </pre>
+              </div>
+
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <h3 className="font-semibold text-white mb-2 font-mono text-blue-400">og:description</h3>
+                <p className="text-neutral-400 text-sm mb-3">
+                  A brief summary shown below the title. Keep it under 155 characters
+                  for full display. Focus on what makes the content valuable—why should
+                  someone click?
+                </p>
+                <pre className="bg-neutral-950 p-3 rounded-lg overflow-x-auto text-sm">
+                  <code className="text-green-400">{`<meta property="og:description" content="Brief description here" />`}</code>
+                </pre>
+              </div>
+
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <h3 className="font-semibold text-white mb-2 font-mono text-blue-400">og:image</h3>
+                <p className="text-neutral-400 text-sm mb-3">
+                  The preview image URL. Must be absolute (include https://). Recommended
+                  size is 1200×630 pixels for optimal display across platforms. This is
+                  the single most impactful tag for engagement.
+                </p>
+                <pre className="bg-neutral-950 p-3 rounded-lg overflow-x-auto text-sm">
+                  <code className="text-green-400">{`<meta property="og:image" content="https://example.com/image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />`}</code>
+                </pre>
+              </div>
+
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <h3 className="font-semibold text-white mb-2 font-mono text-blue-400">twitter:card</h3>
+                <p className="text-neutral-400 text-sm mb-3">
+                  Tells Twitter how to display your content. Use "summary_large_image"
+                  for a big preview image, or "summary" for a smaller thumbnail. The
+                  large image format typically gets more engagement.
+                </p>
+                <pre className="bg-neutral-950 p-3 rounded-lg overflow-x-auto text-sm">
+                  <code className="text-green-400">{`<meta name="twitter:card" content="summary_large_image" />`}</code>
+                </pre>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Framework-Specific Implementation
+            </h2>
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <h3 className="font-semibold text-white mb-3">Next.js</h3>
+                <p className="text-neutral-400 text-sm mb-3">
+                  Use the Metadata API in your page.tsx or layout.tsx files for
+                  automatic meta tag generation.
+                </p>
+                <a href="/docs/guides/nextjs" className="text-sm text-blue-400 hover:underline">
+                  Read the Next.js guide →
+                </a>
+              </div>
+
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <h3 className="font-semibold text-white mb-3">React</h3>
+                <p className="text-neutral-400 text-sm mb-3">
+                  Use react-helmet or react-helmet-async to manage meta tags in
+                  single-page applications.
+                </p>
+                <a href="/docs/guides/react" className="text-sm text-blue-400 hover:underline">
+                  Read the React guide →
+                </a>
+              </div>
+
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <h3 className="font-semibold text-white mb-3">Vue</h3>
+                <p className="text-neutral-400 text-sm mb-3">
+                  Use @vueuse/head or Nuxt's built-in head management for Vue
+                  applications.
+                </p>
+                <a href="/docs/guides/vue" className="text-sm text-blue-400 hover:underline">
+                  Read the Vue guide →
+                </a>
+              </div>
+
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <h3 className="font-semibold text-white mb-3">Plain HTML</h3>
+                <p className="text-neutral-400 text-sm mb-3">
+                  Simply paste the generated code directly into your HTML
+                  &lt;head&gt; section.
+                </p>
+                <a href="/docs/getting-started" className="text-sm text-blue-400 hover:underline">
+                  Getting started →
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Common Mistakes to Avoid
+            </h2>
+            <div className="space-y-3">
+              <div className="flex gap-3 p-4 bg-red-500/10 rounded-lg border border-red-500/30">
+                <span className="text-red-400">✗</span>
+                <div>
+                  <p className="text-neutral-300 font-medium">Using relative image URLs</p>
+                  <p className="text-neutral-500 text-sm">Always use absolute URLs starting with https://</p>
+                </div>
+              </div>
+              <div className="flex gap-3 p-4 bg-red-500/10 rounded-lg border border-red-500/30">
+                <span className="text-red-400">✗</span>
+                <div>
+                  <p className="text-neutral-300 font-medium">Missing image dimensions</p>
+                  <p className="text-neutral-500 text-sm">Include og:image:width and og:image:height for faster rendering</p>
+                </div>
+              </div>
+              <div className="flex gap-3 p-4 bg-red-500/10 rounded-lg border border-red-500/30">
+                <span className="text-red-400">✗</span>
+                <div>
+                  <p className="text-neutral-300 font-medium">Forgetting Twitter-specific tags</p>
+                  <p className="text-neutral-500 text-sm">Twitter needs twitter:card even if you have OG tags</p>
+                </div>
+              </div>
+              <div className="flex gap-3 p-4 bg-red-500/10 rounded-lg border border-red-500/30">
+                <span className="text-red-400">✗</span>
+                <div>
+                  <p className="text-neutral-300 font-medium">Not testing after deployment</p>
+                  <p className="text-neutral-500 text-sm">Cache can cause old previews to persist—use platform debug tools</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 p-6 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-neutral-800">
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Need an OG image to go with your tags?
+            </h3>
+            <p className="text-neutral-400 mb-4">
+              Create professional social preview images in seconds with our free generator.
+            </p>
+            <a
+              href="/"
+              className="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+            >
+              Create OG Image
+            </a>
+          </div>
+        </section>
       </div>
     </div>
   );

@@ -416,6 +416,169 @@ export default function AuditContent() {
             </p>
           </div>
         )}
+
+        {/* SEO Content Section */}
+        <section className="mt-24 pt-16 border-t border-neutral-800">
+          <h2 className="text-3xl font-bold text-white mb-6">
+            Why Audit Your Site's OG Tags?
+          </h2>
+          <div className="prose prose-invert prose-neutral max-w-none">
+            <p className="text-lg text-neutral-300 leading-relaxed mb-6">
+              Most websites have hundreds of pages, and each one needs proper Open Graph
+              tags if you want them to look good when shared on social media. The problem?
+              It's tedious to check them one by one. A single missing og:image tag, and
+              your carefully designed page shows up with a blank preview.
+            </p>
+            <p className="text-neutral-400 leading-relaxed mb-6">
+              This audit tool crawls your sitemap or homepage links and checks every page
+              for essential OG tags. In minutes, you'll have a complete picture of which
+              pages are ready for social sharing and which need attention.
+            </p>
+          </div>
+
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              How the Audit Works
+            </h2>
+            <div className="grid gap-6 sm:grid-cols-3">
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <div className="text-2xl mb-3">1️⃣</div>
+                <h3 className="font-semibold text-white mb-2">Discover Pages</h3>
+                <p className="text-neutral-400 text-sm">
+                  We look for your sitemap.xml first. If not found, we crawl links from
+                  your homepage. Up to 50 pages per audit.
+                </p>
+              </div>
+
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <div className="text-2xl mb-3">2️⃣</div>
+                <h3 className="font-semibold text-white mb-2">Check Each Page</h3>
+                <p className="text-neutral-400 text-sm">
+                  For each URL, we fetch the HTML and extract all meta tags. We check
+                  for og:title, og:description, og:image, and Twitter cards.
+                </p>
+              </div>
+
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <div className="text-2xl mb-3">3️⃣</div>
+                <h3 className="font-semibold text-white mb-2">Generate Report</h3>
+                <p className="text-neutral-400 text-sm">
+                  See results in real-time as pages are checked. Export to CSV for
+                  tracking fixes or sharing with your team.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              What We Check For
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/30">
+                <h3 className="font-semibold text-green-400 mb-2">✓ Passing (OK)</h3>
+                <ul className="text-sm text-neutral-400 space-y-1">
+                  <li>• Has og:title or title tag</li>
+                  <li>• Has og:description or meta description</li>
+                  <li>• Has og:image with valid URL</li>
+                </ul>
+              </div>
+
+              <div className="p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
+                <h3 className="font-semibold text-yellow-400 mb-2">⚠ Warning</h3>
+                <ul className="text-sm text-neutral-400 space-y-1">
+                  <li>• Missing og:description (has fallback)</li>
+                  <li>• Image dimensions not specified</li>
+                  <li>• Missing Twitter-specific tags</li>
+                </ul>
+              </div>
+
+              <div className="p-4 bg-red-500/10 rounded-lg border border-red-500/30">
+                <h3 className="font-semibold text-red-400 mb-2">✗ Failing (Error)</h3>
+                <ul className="text-sm text-neutral-400 space-y-1">
+                  <li>• Missing og:title and title tag</li>
+                  <li>• Missing og:image entirely</li>
+                  <li>• Page returned error status</li>
+                </ul>
+              </div>
+
+              <div className="p-4 bg-neutral-800 rounded-lg border border-neutral-700">
+                <h3 className="font-semibold text-neutral-400 mb-2">ℹ Info</h3>
+                <ul className="text-sm text-neutral-500 space-y-1">
+                  <li>• Pages per audit: up to 50</li>
+                  <li>• Concurrent checks: 3 at a time</li>
+                  <li>• Timeout per page: 10 seconds</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Tips for Large Sites
+            </h2>
+            <div className="space-y-4">
+              <div className="flex gap-4 p-4 bg-neutral-900/50 rounded-lg">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">1</div>
+                <div>
+                  <h3 className="font-semibold text-white">Have a sitemap.xml</h3>
+                  <p className="text-neutral-400 text-sm mt-1">
+                    A proper sitemap ensures we find your important pages. Without one,
+                    we only check links from your homepage.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 p-4 bg-neutral-900/50 rounded-lg">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">2</div>
+                <div>
+                  <h3 className="font-semibold text-white">Fix Templates First</h3>
+                  <p className="text-neutral-400 text-sm mt-1">
+                    If all your blog posts are failing, the issue is likely in your blog
+                    post template. Fix it once, fix all pages.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 p-4 bg-neutral-900/50 rounded-lg">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">3</div>
+                <div>
+                  <h3 className="font-semibold text-white">Use Dynamic OG Images</h3>
+                  <p className="text-neutral-400 text-sm mt-1">
+                    For sites with thousands of pages, generate OG images automatically
+                    using Satori. Check our <a href="/docs/dynamic-og" className="text-blue-400 hover:underline">dynamic OG guide</a>.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 p-4 bg-neutral-900/50 rounded-lg">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">4</div>
+                <div>
+                  <h3 className="font-semibold text-white">Export and Track</h3>
+                  <p className="text-neutral-400 text-sm mt-1">
+                    Use the CSV export to create a spreadsheet. Track fixes over time
+                    and assign specific pages to team members.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 p-6 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-xl border border-neutral-800">
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Found pages without OG images?
+            </h3>
+            <p className="text-neutral-400 mb-4">
+              Create professional OG images for your missing pages with our free generator.
+            </p>
+            <a
+              href="/"
+              className="inline-flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              Create OG Images
+            </a>
+          </div>
+        </section>
       </div>
     </div>
   );

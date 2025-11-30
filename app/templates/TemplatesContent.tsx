@@ -180,6 +180,152 @@ export default function TemplatesContent() {
             </Button>
           </Link>
         </div>
+
+        {/* SEO Content Section */}
+        <section className="mt-24 pt-16 border-t border-neutral-800">
+          <h2 className="text-3xl font-bold text-white mb-6">
+            Choosing the Right OG Image Template
+          </h2>
+          <div className="prose prose-invert prose-neutral max-w-none">
+            <p className="text-lg text-neutral-300 leading-relaxed mb-6">
+              Your OG image template isn't just about aesthetics—it's about instant
+              recognition. When someone scrolls through their Twitter feed or LinkedIn
+              timeline, your content has maybe half a second to register. The right
+              template creates a visual pattern that people start to associate with
+              your brand.
+            </p>
+            <p className="text-neutral-400 leading-relaxed mb-6">
+              Think about it: every time someone sees your distinctive purple gradient
+              or that clean minimal style with your logo, they're building a mental
+              connection. After a while, they don't even need to read the title—they
+              know it's from you. That's the power of consistent, template-based OG images.
+            </p>
+          </div>
+
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Template Categories Explained
+            </h2>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <h3 className="text-lg font-semibold text-white mb-3">Gradient Templates</h3>
+                <p className="text-neutral-400 text-sm">
+                  Eye-catching color transitions that stand out in feeds. Best for tech
+                  companies, startups, and modern brands. The gradient creates depth and
+                  visual interest without needing images.
+                </p>
+              </div>
+
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <h3 className="text-lg font-semibold text-white mb-3">Minimal Templates</h3>
+                <p className="text-neutral-400 text-sm">
+                  Clean, typography-focused designs. Perfect for blogs, documentation,
+                  and professional content. Let your words do the talking with maximum
+                  readability.
+                </p>
+              </div>
+
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <h3 className="text-lg font-semibold text-white mb-3">Bold Templates</h3>
+                <p className="text-neutral-400 text-sm">
+                  High-contrast, attention-grabbing designs. Great for announcements,
+                  product launches, and content that needs to cut through the noise.
+                </p>
+              </div>
+
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <h3 className="text-lg font-semibold text-white mb-3">Split Templates</h3>
+                <p className="text-neutral-400 text-sm">
+                  Two-panel layouts that balance text and visual elements. Ideal for
+                  showcasing products, features, or comparisons with clear hierarchy.
+                </p>
+              </div>
+
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <h3 className="text-lg font-semibold text-white mb-3">Glass Templates</h3>
+                <p className="text-neutral-400 text-sm">
+                  Modern glassmorphism effects with frosted backgrounds. Perfect for
+                  SaaS products, apps, and contemporary tech brands.
+                </p>
+              </div>
+
+              <div className="p-6 bg-neutral-900 rounded-xl border border-neutral-800">
+                <h3 className="text-lg font-semibold text-white mb-3">Blog Templates</h3>
+                <p className="text-neutral-400 text-sm">
+                  Content-focused layouts optimized for article previews. Include space
+                  for titles, authors, and reading time indicators.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Best Practices for OG Templates
+            </h2>
+            <div className="space-y-4">
+              <div className="flex gap-4 p-4 bg-neutral-900/50 rounded-lg">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">1</div>
+                <div>
+                  <h3 className="font-semibold text-white">Stay Consistent</h3>
+                  <p className="text-neutral-400 text-sm mt-1">
+                    Use the same template family across your site. Consistency builds
+                    recognition and trust over time.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 p-4 bg-neutral-900/50 rounded-lg">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">2</div>
+                <div>
+                  <h3 className="font-semibold text-white">Match Your Brand</h3>
+                  <p className="text-neutral-400 text-sm mt-1">
+                    Customize colors to match your brand palette. Even a small color
+                    tweak makes templates feel uniquely yours.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 p-4 bg-neutral-900/50 rounded-lg">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">3</div>
+                <div>
+                  <h3 className="font-semibold text-white">Test on Multiple Platforms</h3>
+                  <p className="text-neutral-400 text-sm mt-1">
+                    What looks great on Twitter might get cropped oddly on LinkedIn.
+                    Use our validator to preview across platforms.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 p-4 bg-neutral-900/50 rounded-lg">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">4</div>
+                <div>
+                  <h3 className="font-semibold text-white">Keep Text Short</h3>
+                  <p className="text-neutral-400 text-sm mt-1">
+                    Aim for 5-10 words max. Long titles get truncated or become
+                    unreadable on mobile feeds.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 p-6 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl border border-neutral-800">
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Want to create dynamic templates?
+            </h3>
+            <p className="text-neutral-400 mb-4">
+              Learn how to generate OG images programmatically with Satori for automatic
+              template-based generation.
+            </p>
+            <Link
+              href="/docs/dynamic-og"
+              className="inline-flex items-center px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+            >
+              Read the Guide
+            </Link>
+          </div>
+        </section>
       </div>
     </div>
   );
