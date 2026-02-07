@@ -7,6 +7,100 @@ let wasmInitialized = false;
 let wasmInitializing: Promise<void> | null = null;
 let fontBuffer: ArrayBuffer | null = null;
 let fontLoading: Promise<ArrayBuffer> | null = null;
+const emojiDataUriCache = new Map<string, string>();
+const emojiLoadingCache = new Map<string, Promise<string | null>>();
+const emojiMissCache = new Set<string>();
+
+const TWEMOJI_CDN_BASE =
+  "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg";
+
+function toEmojiCodepoints(segment: string): string[] {
+  return Array.from(segment)
+    .map((char) => char.codePointAt(0)?.toString(16))
+    .filter((value): value is string => Boolean(value));
+}
+
+function getEmojiCodepointCandidates(segment: string): string[] {
+  const codepoints = toEmojiCodepoints(segment);
+  if (codepoints.length === 0) {
+    return [];
+  }
+
+  const candidates = new Set<string>();
+  candidates.add(codepoints.join("-"));
+
+  const withoutVariationSelector = codepoints.filter(
+    (codepoint) => codepoint !== "fe0f"
+  );
+
+  if (withoutVariationSelector.length > 0) {
+    candidates.add(withoutVariationSelector.join("-"));
+  }
+
+  return [...candidates].filter(Boolean);
+}
+
+function encodeToBase64(input: string): string {
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(input, "utf-8").toString("base64");
+  }
+
+  const bytes = new TextEncoder().encode(input);
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary);
+}
+
+async function loadEmojiDataUri(segment: string): Promise<string | null> {
+  const cached = emojiDataUriCache.get(segment);
+  if (cached) {
+    return cached;
+  }
+
+  if (emojiMissCache.has(segment)) {
+    return null;
+  }
+
+  const loading = emojiLoadingCache.get(segment);
+  if (loading) {
+    return loading;
+  }
+
+  const promise = (async () => {
+    const candidates = getEmojiCodepointCandidates(segment);
+    if (candidates.length === 0) {
+      return null;
+    }
+
+    for (const codepoint of candidates) {
+      try {
+        const response = await fetch(`${TWEMOJI_CDN_BASE}/${codepoint}.svg`);
+        if (!response.ok) {
+          continue;
+        }
+
+        const svg = await response.text();
+        const dataUri = `data:image/svg+xml;base64,${encodeToBase64(svg)}`;
+        emojiDataUriCache.set(segment, dataUri);
+        return dataUri;
+      } catch {
+        continue;
+      }
+    }
+
+    emojiMissCache.add(segment);
+    return null;
+  })();
+
+  emojiLoadingCache.set(segment, promise);
+  try {
+    return await promise;
+  } finally {
+    emojiLoadingCache.delete(segment);
+  }
+}
 
 /**
  * Initializes the WASM module
@@ -131,6 +225,15 @@ export async function renderToBlob(
         style: "normal",
       },
     ],
+    loadAdditionalAsset: async (code: string, segment: string) => {
+      if (code === "emoji") {
+        const dataUri = await loadEmojiDataUri(segment);
+        if (dataUri) {
+          return dataUri;
+        }
+      }
+      return [];
+    },
   });
 
   const satoriTime = performance.now();
@@ -182,6 +285,15 @@ export async function renderToPngBlob(
         style: "normal",
       },
     ],
+    loadAdditionalAsset: async (code: string, segment: string) => {
+      if (code === "emoji") {
+        const dataUri = await loadEmojiDataUri(segment);
+        if (dataUri) {
+          return dataUri;
+        }
+      }
+      return [];
+    },
   });
 
   const resvg = new Resvg(svg, {

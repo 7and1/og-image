@@ -1,0 +1,59 @@
+{
+  "provider": "unsplash",
+  "categories": [
+    {
+      "id": "abstract",
+      "label": "Abstract",
+      "query": "abstract gradient background",
+      "count": 30
+    },
+    {
+      "id": "nature",
+      "label": "Nature",
+      "query": "mountain landscape background",
+      "count": 30
+    },
+    {
+      "id": "ocean",
+      "label": "Ocean",
+      "query": "ocean waves background",
+      "count": 20
+    },
+    {
+      "id": "city",
+      "label": "City",
+      "query": "city skyline night background",
+      "count": 25
+    },
+    {
+      "id": "architecture",
+      "label": "Architecture",
+      "query": "modern architecture background",
+      "count": 20
+    },
+    {
+      "id": "workspace",
+      "label": "Workspace",
+      "query": "workspace desk minimal background",
+      "count": 20
+    },
+    {
+      "id": "technology",
+      "label": "Technology",
+      "query": "technology circuit dark background",
+      "count": 20
+    },
+    {
+      "id": "space",
+      "label": "Space",
+      "query": "nebula stars space background",
+      "count": 15
+    },
+    {
+      "id": "texture",
+      "label": "Texture",
+      "query": "paper texture background",
+      "count": 15
+    }
+  ]
+}

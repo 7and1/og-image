@@ -1,4 +1,4 @@
-import type { TemplateProps } from "@/types";
+import type { TemplateProps } from "../types";
 
 /**
  * Blog Template

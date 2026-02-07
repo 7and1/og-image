@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ImageIcon, Github, Menu, X } from "lucide-react";
+import { Github, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { OGLogo } from "@/components/icons/OGLogo";
 import { useState } from "react";
 
 const navItems = [
@@ -22,9 +23,7 @@ export function Header() {
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 font-semibold text-white">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <ImageIcon className="h-4 w-4 text-white" />
-          </div>
+          <OGLogo size={32} />
           <span className="hidden sm:inline">og-image.org</span>
         </Link>
 

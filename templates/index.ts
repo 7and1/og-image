@@ -1,4 +1,4 @@
-import type { TemplateId, TemplateConfig, TemplateProps } from "@/types";
+import type { TemplateId, TemplateConfig, TemplateProps } from "../types";
 
 // Re-export types for convenience
 export type { TemplateId, TemplateConfig, TemplateProps };
@@ -10,6 +10,39 @@ import { SplitTemplate } from "./split";
 import { GlassTemplate } from "./glass";
 import { StartupTemplate } from "./startup";
 import { BlogTemplate } from "./blog";
+import { PhotoHeroTemplate } from "./photo-hero";
+import { PhotoGlassTemplate } from "./photo-glass";
+import { PhotoCaptionTemplate } from "./photo-caption";
+import { PhotoSplitTemplate } from "./photo-split";
+import { PhotoDuotoneTemplate } from "./photo-duotone";
+import { PhotoFrameTemplate } from "./photo-frame";
+
+import backgroundCatalog from "../public/catalog/backgrounds.json";
+
+const defaultPhotoByCategory = new Map<string, { id: string; url: string }>();
+
+function pickDefaultPhoto(categoryId: string): { id: string; url: string } | null {
+  const cached = defaultPhotoByCategory.get(categoryId);
+  if (cached) {
+    return cached;
+  }
+
+  const item = backgroundCatalog.items.find((candidate) => candidate.category === categoryId);
+  if (!item) {
+    return null;
+  }
+
+  const value = { id: item.id, url: item.urls.og };
+  defaultPhotoByCategory.set(categoryId, value);
+  return value;
+}
+
+const defaultPhotoAbstract = pickDefaultPhoto("abstract");
+const defaultPhotoTechnology = pickDefaultPhoto("technology");
+const defaultPhotoNature = pickDefaultPhoto("nature");
+const defaultPhotoCity = pickDefaultPhoto("city");
+const defaultPhotoSpace = pickDefaultPhoto("space");
+const defaultPhotoArchitecture = pickDefaultPhoto("architecture");
 
 /**
  * Template registry with all available templates
@@ -22,6 +55,7 @@ export const templates: Record<TemplateId, TemplateConfig> = {
     category: "general",
     component: GradientTemplate,
     defaultProps: {
+      backgroundMode: "color",
       backgroundColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
       textColor: "#ffffff",
       accentColor: "#fbbf24",
@@ -34,6 +68,7 @@ export const templates: Record<TemplateId, TemplateConfig> = {
     category: "general",
     component: MinimalTemplate,
     defaultProps: {
+      backgroundMode: "color",
       backgroundColor: "#ffffff",
       textColor: "#171717",
       accentColor: "#3b82f6",
@@ -46,6 +81,7 @@ export const templates: Record<TemplateId, TemplateConfig> = {
     category: "startup",
     component: ModernTemplate,
     defaultProps: {
+      backgroundMode: "color",
       backgroundColor: "#0f172a",
       textColor: "#f8fafc",
       accentColor: "#38bdf8",
@@ -58,6 +94,7 @@ export const templates: Record<TemplateId, TemplateConfig> = {
     category: "event",
     component: BoldTemplate,
     defaultProps: {
+      backgroundMode: "color",
       backgroundColor: "#dc2626",
       textColor: "#ffffff",
       accentColor: "#fbbf24",
@@ -70,9 +107,11 @@ export const templates: Record<TemplateId, TemplateConfig> = {
     category: "product",
     component: SplitTemplate,
     defaultProps: {
+      backgroundMode: "color",
       backgroundColor: "#000000",
       textColor: "#ffffff",
       accentColor: "#22c55e",
+      layout: "split",
     },
   },
   glass: {
@@ -82,6 +121,7 @@ export const templates: Record<TemplateId, TemplateConfig> = {
     category: "startup",
     component: GlassTemplate,
     defaultProps: {
+      backgroundMode: "color",
       backgroundColor: "linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%)",
       textColor: "#ffffff",
       accentColor: "#60a5fa",
@@ -94,6 +134,7 @@ export const templates: Record<TemplateId, TemplateConfig> = {
     category: "startup",
     component: StartupTemplate,
     defaultProps: {
+      backgroundMode: "color",
       backgroundColor: "#000000",
       textColor: "#ffffff",
       accentColor: "#22c55e",
@@ -106,9 +147,106 @@ export const templates: Record<TemplateId, TemplateConfig> = {
     category: "blog",
     component: BlogTemplate,
     defaultProps: {
+      backgroundMode: "color",
       backgroundColor: "#fafafa",
       textColor: "#171717",
       accentColor: "#8b5cf6",
+    },
+  },
+  "photo-hero": {
+    id: "photo-hero",
+    name: "Photo Hero",
+    description: "Full-bleed photo background with bold headline",
+    category: "social",
+    component: PhotoHeroTemplate,
+    defaultProps: {
+      backgroundMode: "photo",
+      backgroundColor: "#0b1220",
+      textColor: "#ffffff",
+      accentColor: "#38bdf8",
+      backgroundId: defaultPhotoAbstract?.id ?? null,
+      backgroundImageSrc: defaultPhotoAbstract?.url ?? null,
+      overlayOpacity: 0.55,
+    },
+  },
+  "photo-glass": {
+    id: "photo-glass",
+    name: "Photo Glass",
+    description: "Glassmorphism card on top of a photo background",
+    category: "startup",
+    component: PhotoGlassTemplate,
+    defaultProps: {
+      backgroundMode: "photo",
+      backgroundColor: "#0b1220",
+      textColor: "#ffffff",
+      accentColor: "#a78bfa",
+      backgroundId: defaultPhotoTechnology?.id ?? null,
+      backgroundImageSrc: defaultPhotoTechnology?.url ?? null,
+      overlayOpacity: 0.55,
+    },
+  },
+  "photo-caption": {
+    id: "photo-caption",
+    name: "Photo Caption",
+    description: "Photo background with a strong caption bar",
+    category: "blog",
+    component: PhotoCaptionTemplate,
+    defaultProps: {
+      backgroundMode: "photo",
+      backgroundColor: "#0b1220",
+      textColor: "#ffffff",
+      accentColor: "#fbbf24",
+      backgroundId: defaultPhotoNature?.id ?? null,
+      backgroundImageSrc: defaultPhotoNature?.url ?? null,
+      overlayOpacity: 0.65,
+    },
+  },
+  "photo-split": {
+    id: "photo-split",
+    name: "Photo Split",
+    description: "Photo left, information panel right",
+    category: "product",
+    component: PhotoSplitTemplate,
+    defaultProps: {
+      backgroundMode: "photo",
+      backgroundColor: "#0b1220",
+      textColor: "#ffffff",
+      accentColor: "#22c55e",
+      backgroundId: defaultPhotoCity?.id ?? null,
+      backgroundImageSrc: defaultPhotoCity?.url ?? null,
+      overlayOpacity: 0.55,
+    },
+  },
+  "photo-duotone": {
+    id: "photo-duotone",
+    name: "Photo Duotone",
+    description: "Duotone overlay photo background for brand cohesion",
+    category: "social",
+    component: PhotoDuotoneTemplate,
+    defaultProps: {
+      backgroundMode: "photo",
+      backgroundColor: "#050b16",
+      textColor: "#ffffff",
+      accentColor: "#06b6d4",
+      backgroundId: defaultPhotoSpace?.id ?? null,
+      backgroundImageSrc: defaultPhotoSpace?.url ?? null,
+      overlayOpacity: 0.7,
+    },
+  },
+  "photo-frame": {
+    id: "photo-frame",
+    name: "Photo Frame",
+    description: "Magazine-style framed photo cover",
+    category: "event",
+    component: PhotoFrameTemplate,
+    defaultProps: {
+      backgroundMode: "photo",
+      backgroundColor: "#0b1220",
+      textColor: "#ffffff",
+      accentColor: "#f472b6",
+      backgroundId: defaultPhotoArchitecture?.id ?? null,
+      backgroundImageSrc: defaultPhotoArchitecture?.url ?? null,
+      overlayOpacity: 0.5,
     },
   },
 };

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useStore, useActions } from "@/store/useStore";
 import { getTemplateComponent } from "@/templates";
 import { renderToBlob, preloadEngine } from "@/lib/engine";
+import { getBackgroundById } from "@/lib/background-catalog";
 import { EditorPanel } from "@/components/editor";
 import { PreviewCanvas, SocialPreview } from "@/components/preview";
 import { ExportSection } from "@/components/export";
@@ -19,10 +20,14 @@ export default function Home() {
     backgroundColor,
     textColor,
     accentColor,
+    backgroundMode,
+    backgroundId,
+    backgroundImageSrc,
+    overlayOpacity,
     previewUrl,
   } = useStore();
 
-  const { setUI } = useActions();
+  const { setUI, setBackground } = useActions();
   const previousUrlRef = useRef<string | null>(null);
 
   // Preload engine on mount
@@ -41,9 +46,45 @@ export default function Home() {
         backgroundColor={backgroundColor}
         textColor={textColor}
         accentColor={accentColor}
+        backgroundMode={backgroundMode}
+        backgroundId={backgroundId}
+        backgroundImageSrc={backgroundImageSrc}
+        overlayOpacity={overlayOpacity}
       />
     );
-  }, [title, description, icon, template, backgroundColor, textColor, accentColor]);
+  }, [
+    title,
+    description,
+    icon,
+    template,
+    backgroundColor,
+    textColor,
+    accentColor,
+    backgroundMode,
+    backgroundId,
+    backgroundImageSrc,
+    overlayOpacity,
+  ]);
+
+  // When selecting a catalog photo background, map id -> actual image URL.
+  useEffect(() => {
+    const applyCatalogBackground = async () => {
+      if (backgroundMode !== "photo" || !backgroundId) {
+        return;
+      }
+
+      const item = await getBackgroundById(backgroundId);
+      if (!item) {
+        return;
+      }
+
+      if (backgroundImageSrc !== item.urls.og) {
+        setBackground({ backgroundImageSrc: item.urls.og });
+      }
+    };
+
+    applyCatalogBackground().catch(() => {});
+  }, [backgroundMode, backgroundId, backgroundImageSrc, setBackground]);
 
   // Debounced render effect
   useEffect(() => {

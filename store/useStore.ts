@@ -1,8 +1,10 @@
 import { create } from "zustand";
 import { persist, devtools } from "zustand/middleware";
 import { useShallow } from "zustand/react/shallow";
+import { getTemplate } from "@/templates";
 import type {
   TemplateId,
+  BackgroundMode,
   FontFamily,
   FontSize,
   Layout,
@@ -23,6 +25,10 @@ interface OGState {
   backgroundColor: string;
   textColor: string;
   accentColor: string;
+  backgroundMode: BackgroundMode;
+  backgroundId: string | null;
+  backgroundImageSrc: string | null;
+  overlayOpacity: number;
 
   // === Advanced Options ===
   fontFamily: FontFamily;
@@ -43,6 +49,14 @@ interface OGState {
   setStyling: (
     styling: Partial<
       Pick<OGState, "template" | "backgroundColor" | "textColor" | "accentColor">
+    >
+  ) => void;
+  setBackground: (
+    background: Partial<
+      Pick<
+        OGState,
+        "backgroundMode" | "backgroundId" | "backgroundImageSrc" | "overlayOpacity"
+      >
     >
   ) => void;
   setAdvanced: (
@@ -74,6 +88,10 @@ const defaultState = {
   backgroundColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
   textColor: "#ffffff",
   accentColor: "#3b82f6",
+  backgroundMode: "color" as BackgroundMode,
+  backgroundId: null,
+  backgroundImageSrc: null,
+  overlayOpacity: 0.55,
 
   // Advanced
   fontFamily: "inter" as FontFamily,
@@ -86,53 +104,6 @@ const defaultState = {
   error: null,
   activeExportTab: "nextjs" as ExportTab,
   isAdvancedOpen: false,
-};
-
-/**
- * Template presets for quick styling
- */
-const templatePresets: Record<TemplateId, Partial<OGState>> = {
-  gradient: {
-    backgroundColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    textColor: "#ffffff",
-    accentColor: "#fbbf24",
-  },
-  minimal: {
-    backgroundColor: "#ffffff",
-    textColor: "#171717",
-    accentColor: "#3b82f6",
-  },
-  modern: {
-    backgroundColor: "#0f172a",
-    textColor: "#f8fafc",
-    accentColor: "#38bdf8",
-  },
-  bold: {
-    backgroundColor: "#dc2626",
-    textColor: "#ffffff",
-    accentColor: "#fbbf24",
-  },
-  split: {
-    backgroundColor: "#000000",
-    textColor: "#ffffff",
-    accentColor: "#22c55e",
-    layout: "split" as Layout,
-  },
-  glass: {
-    backgroundColor: "linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%)",
-    textColor: "#ffffff",
-    accentColor: "#60a5fa",
-  },
-  startup: {
-    backgroundColor: "#000000",
-    textColor: "#ffffff",
-    accentColor: "#22c55e",
-  },
-  blog: {
-    backgroundColor: "#fafafa",
-    textColor: "#171717",
-    accentColor: "#8b5cf6",
-  },
 };
 
 /**
@@ -150,6 +121,9 @@ export const useStore = create<OGState>()(
         setStyling: (styling) =>
           set((state) => ({ ...state, ...styling }), false, "setStyling"),
 
+        setBackground: (background) =>
+          set((state) => ({ ...state, ...background }), false, "setBackground"),
+
         setAdvanced: (advanced) =>
           set((state) => ({ ...state, ...advanced }), false, "setAdvanced"),
 
@@ -159,11 +133,29 @@ export const useStore = create<OGState>()(
 
         loadTemplate: (templateId) =>
           set(
-            (state) => ({
-              ...state,
-              template: templateId,
-              ...templatePresets[templateId],
-            }),
+            (state) => {
+              const template = getTemplate(templateId);
+              const defaults = template.defaultProps;
+
+              return {
+                ...state,
+                template: templateId,
+                backgroundColor:
+                  defaults.backgroundColor ?? defaultState.backgroundColor,
+                textColor: defaults.textColor ?? defaultState.textColor,
+                accentColor: defaults.accentColor ?? defaultState.accentColor,
+                backgroundMode:
+                  defaults.backgroundMode ?? defaultState.backgroundMode,
+                backgroundId: defaults.backgroundId ?? null,
+                backgroundImageSrc: defaults.backgroundImageSrc ?? null,
+                overlayOpacity:
+                  typeof defaults.overlayOpacity === "number"
+                    ? defaults.overlayOpacity
+                    : defaultState.overlayOpacity,
+                layout:
+                  (defaults.layout as Layout | undefined) ?? defaultState.layout,
+              };
+            },
             false,
             "loadTemplate"
           ),
@@ -179,10 +171,28 @@ export const useStore = create<OGState>()(
           backgroundColor: state.backgroundColor,
           textColor: state.textColor,
           accentColor: state.accentColor,
+          backgroundMode: state.backgroundMode,
+          backgroundId: state.backgroundId,
+          backgroundImageSrc: null,
+          overlayOpacity: state.overlayOpacity,
           fontFamily: state.fontFamily,
           fontSize: state.fontSize,
           layout: state.layout,
         }),
+        onRehydrateStorage: () => (state) => {
+          if (!state) {
+            return;
+          }
+
+          // Upload backgrounds are local-only, so they cannot be restored after refresh.
+          if (state.backgroundMode === "upload" && !state.backgroundImageSrc) {
+            state.setBackground({
+              backgroundMode: "color",
+              backgroundId: null,
+              backgroundImageSrc: null,
+            });
+          }
+        },
       }
     ),
     { name: "og-store" }
@@ -212,6 +222,10 @@ export const useStyling = () =>
       backgroundColor: state.backgroundColor,
       textColor: state.textColor,
       accentColor: state.accentColor,
+      backgroundMode: state.backgroundMode,
+      backgroundId: state.backgroundId,
+      backgroundImageSrc: state.backgroundImageSrc,
+      overlayOpacity: state.overlayOpacity,
     }))
   );
 
@@ -243,6 +257,7 @@ export const useActions = () =>
     useShallow((state) => ({
       setContent: state.setContent,
       setStyling: state.setStyling,
+      setBackground: state.setBackground,
       setAdvanced: state.setAdvanced,
       setUI: state.setUI,
       reset: state.reset,

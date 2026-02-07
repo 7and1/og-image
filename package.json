@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "catalog:generate": "node scripts/generate-background-catalog.mjs",
+    "test:unit": "vitest run",
+    "test": "vitest run"
   },
   "dependencies": {
     "@resvg/resvg-wasm": "2.6.2",
@@ -31,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.0.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "3.2.4"
   }
 }

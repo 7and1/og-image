@@ -34,7 +34,11 @@ export function TemplatePicker({ selected, onChange }: TemplatePickerProps) {
               className="h-[40px] w-[76px] rounded overflow-hidden"
               style={{
                 background:
-                  template.defaultProps.backgroundColor || "#000000",
+                  template.defaultProps.backgroundImageSrc
+                    ? `url(${template.defaultProps.backgroundImageSrc})`
+                    : template.defaultProps.backgroundColor || "#000000",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
               }}
             >
               <div className="flex h-full w-full flex-col items-center justify-center p-1">

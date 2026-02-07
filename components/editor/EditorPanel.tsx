@@ -4,6 +4,7 @@ import { useStore, useActions } from "@/store/useStore";
 import { Input, Textarea } from "@/components/ui";
 import { ColorPicker } from "./ColorPicker";
 import { TemplatePicker } from "./TemplatePicker";
+import { BackgroundPicker } from "./BackgroundPicker";
 import { ChevronDown, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,10 +17,15 @@ export function EditorPanel() {
     backgroundColor,
     textColor,
     accentColor,
+    backgroundMode,
+    backgroundId,
+    backgroundImageSrc,
+    overlayOpacity,
     isAdvancedOpen,
   } = useStore();
 
-  const { setContent, setStyling, setUI, reset, loadTemplate } = useActions();
+  const { setContent, setStyling, setBackground, setUI, reset, loadTemplate } =
+    useActions();
 
   return (
     <div className="flex h-full w-[380px] flex-shrink-0 flex-col border-r border-neutral-800 bg-neutral-900">
@@ -95,6 +101,45 @@ export function EditorPanel() {
             value={accentColor}
             onChange={(color) => setStyling({ accentColor: color })}
           />
+        </div>
+
+        {/* Background Section */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium text-neutral-300">Background</h3>
+
+          <BackgroundPicker
+            backgroundId={backgroundId}
+            backgroundImageSrc={backgroundImageSrc}
+            overlayOpacity={overlayOpacity}
+            onPickPhoto={({ id, src }) => {
+              setBackground({
+                backgroundMode: "photo",
+                backgroundId: id,
+                backgroundImageSrc: src,
+              });
+            }}
+            onUpload={(src) => {
+              setBackground({
+                backgroundMode: "upload",
+                backgroundId: null,
+                backgroundImageSrc: src,
+              });
+            }}
+            onClear={() => {
+              setBackground({
+                backgroundMode: "color",
+                backgroundId: null,
+                backgroundImageSrc: null,
+              });
+            }}
+            onOverlayChange={(value) => {
+              setBackground({ overlayOpacity: value });
+            }}
+          />
+
+          <p className="text-xs text-neutral-500 leading-relaxed">
+            Selected mode: <span className="text-neutral-300">{backgroundMode}</span>
+          </p>
         </div>
 
         {/* Advanced Options (Collapsible) */}

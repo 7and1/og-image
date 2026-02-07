@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getTemplate, getTemplateComponent, type TemplateId } from "@/templates";
 import { useContent, useStyling, useActions } from "@/store/useStore";
 import { renderToBlob, preloadEngine } from "@/lib/engine";
+import { getBackgroundById } from "@/lib/background-catalog";
 import { Button, Card, Input } from "@/components/ui";
 import { toast } from "sonner";
 
@@ -13,10 +14,21 @@ interface TemplateEditorProps {
   slug: string;
 }
 
+function safeHexFromParam(raw: string | null): string | null {
+  if (!raw) {
+    return null;
+  }
+  const normalized = raw.trim().replace(/^#/, "");
+  if (!/^[0-9a-fA-F]{6}$/.test(normalized)) {
+    return null;
+  }
+  return `#${normalized.toLowerCase()}`;
+}
+
 export default function TemplateEditor({ slug }: TemplateEditorProps) {
   const searchParams = useSearchParams();
 
-  const { setContent, setStyling } = useActions();
+  const { setContent, setStyling, setBackground } = useActions();
   const content = useContent();
   const styling = useStyling();
 
@@ -25,45 +37,102 @@ export default function TemplateEditor({ slug }: TemplateEditorProps) {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const template = getTemplate(slug as TemplateId);
+  const currentPreviewRef = useRef<string | null>(null);
+
+  const [resolvedBackgroundSrc, setResolvedBackgroundSrc] = useState<string | null>(
+    null
+  );
 
   // Initialize from URL params
   useEffect(() => {
     if (!template) return;
 
-    // Get params from URL
     const title = searchParams.get("title");
     const desc = searchParams.get("description") || searchParams.get("desc");
     const icon = searchParams.get("icon");
-    const bg = searchParams.get("bg");
-    const text = searchParams.get("text");
-    const accent = searchParams.get("accent");
 
-    // Set content from URL or defaults
+    const bgFromParam = safeHexFromParam(searchParams.get("bg"));
+    const textFromParam = safeHexFromParam(searchParams.get("text"));
+    const accentFromParam = safeHexFromParam(searchParams.get("accent"));
+
+    const bgId = searchParams.get("bgId");
+    const overlayRaw = searchParams.get("overlay");
+    const overlay = overlayRaw ? Number(overlayRaw) : undefined;
+
     if (title || desc || icon) {
       setContent({
         title: title || content.title || "Your Amazing Title",
-        description: desc || content.description || "A compelling description that captures attention",
+        description:
+          desc ||
+          content.description ||
+          "A compelling description that captures attention",
         icon: icon || content.icon || "sparkles",
       });
     }
 
-    // Set styling from URL or template defaults
     setStyling({
       template: slug as TemplateId,
-      backgroundColor: bg ? `#${bg}` : template.defaultProps.backgroundColor || "#000000",
-      textColor: text ? `#${text}` : template.defaultProps.textColor || "#ffffff",
-      accentColor: accent ? `#${accent}` : template.defaultProps.accentColor || "#3b82f6",
+      backgroundColor:
+        bgFromParam || template.defaultProps.backgroundColor || "#000000",
+      textColor: textFromParam || template.defaultProps.textColor || "#ffffff",
+      accentColor: accentFromParam || template.defaultProps.accentColor || "#3b82f6",
     });
-  }, [slug, searchParams, template]);
 
-  // Preload engine
+    setBackground({
+      backgroundMode:
+        bgId || template.defaultProps.backgroundMode === "photo" ? "photo" : "color",
+      backgroundId: bgId || template.defaultProps.backgroundId || null,
+      backgroundImageSrc: template.defaultProps.backgroundImageSrc || null,
+      overlayOpacity:
+        typeof overlay === "number" && Number.isFinite(overlay)
+          ? Math.min(1, Math.max(0, overlay))
+          : template.defaultProps.overlayOpacity,
+    });
+  }, [
+    slug,
+    searchParams,
+    template,
+    setBackground,
+    setContent,
+    setStyling,
+    content.title,
+    content.description,
+    content.icon,
+  ]);
+
+  // Resolve bgId -> image URL
+  useEffect(() => {
+    let cancelled = false;
+
+    const resolve = async () => {
+      if (styling.backgroundMode !== "photo" || !styling.backgroundId) {
+        setResolvedBackgroundSrc(null);
+        return;
+      }
+
+      const item = await getBackgroundById(styling.backgroundId);
+      if (cancelled) return;
+      setResolvedBackgroundSrc(item?.urls.og ?? null);
+    };
+
+    resolve().catch(() => {
+      if (cancelled) return;
+      setResolvedBackgroundSrc(null);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [styling.backgroundMode, styling.backgroundId]);
+
   useEffect(() => {
     preloadEngine();
   }, []);
 
-  // Generate preview when content/styling changes
   useEffect(() => {
     if (!template) return;
+
+    let cancelled = false;
 
     const generatePreview = async () => {
       setIsGenerating(true);
@@ -77,34 +146,49 @@ export default function TemplateEditor({ slug }: TemplateEditorProps) {
             backgroundColor={styling.backgroundColor}
             textColor={styling.textColor}
             accentColor={styling.accentColor}
+            backgroundMode={styling.backgroundMode}
+            backgroundId={styling.backgroundId}
+            backgroundImageSrc={resolvedBackgroundSrc ?? styling.backgroundImageSrc}
+            overlayOpacity={styling.overlayOpacity}
           />
         );
 
         const url = await renderToBlob(element);
-
-        // Cleanup old URL
-        if (previewUrl) {
-          URL.revokeObjectURL(previewUrl);
+        if (cancelled) {
+          URL.revokeObjectURL(url);
+          return;
         }
 
+        const previousUrl = currentPreviewRef.current;
+        currentPreviewRef.current = url;
         setPreviewUrl(url);
+
+        if (previousUrl) {
+          URL.revokeObjectURL(previousUrl);
+        }
       } catch (error) {
         console.error("Failed to generate preview:", error);
-        toast.error("Failed to generate preview");
+        if (!cancelled) {
+          toast.error("Failed to generate preview");
+        }
       } finally {
-        setIsGenerating(false);
+        if (!cancelled) {
+          setIsGenerating(false);
+        }
       }
     };
 
     const debounce = setTimeout(generatePreview, 300);
-    return () => clearTimeout(debounce);
-  }, [content, styling, template, slug]);
+    return () => {
+      cancelled = true;
+      clearTimeout(debounce);
+    };
+  }, [content, styling, template, slug, resolvedBackgroundSrc]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
+      if (currentPreviewRef.current) {
+        URL.revokeObjectURL(currentPreviewRef.current);
       }
     };
   }, []);
@@ -121,7 +205,7 @@ export default function TemplateEditor({ slug }: TemplateEditorProps) {
       link.click();
       document.body.removeChild(link);
       toast.success("Image downloaded!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to download image");
     } finally {
       setIsDownloading(false);
@@ -133,9 +217,37 @@ export default function TemplateEditor({ slug }: TemplateEditorProps) {
     url.searchParams.set("title", content.title || "");
     url.searchParams.set("description", content.description || "");
     if (content.icon) url.searchParams.set("icon", content.icon);
-    url.searchParams.set("bg", styling.backgroundColor.replace("#", ""));
-    url.searchParams.set("text", styling.textColor.replace("#", ""));
-    url.searchParams.set("accent", styling.accentColor.replace("#", ""));
+
+    const backgroundHex = safeHexFromParam(styling.backgroundColor);
+    if (backgroundHex) {
+      url.searchParams.set("bg", backgroundHex.replace("#", ""));
+    } else {
+      url.searchParams.delete("bg");
+    }
+
+    const textHex = safeHexFromParam(styling.textColor);
+    if (textHex) {
+      url.searchParams.set("text", textHex.replace("#", ""));
+    } else {
+      url.searchParams.delete("text");
+    }
+
+    const accentHex = safeHexFromParam(styling.accentColor);
+    if (accentHex) {
+      url.searchParams.set("accent", accentHex.replace("#", ""));
+    } else {
+      url.searchParams.delete("accent");
+    }
+
+    if (styling.backgroundMode === "photo" && styling.backgroundId) {
+      url.searchParams.set("bgId", styling.backgroundId);
+      if (typeof styling.overlayOpacity === "number") {
+        url.searchParams.set("overlay", String(styling.overlayOpacity));
+      }
+    } else {
+      url.searchParams.delete("bgId");
+      url.searchParams.delete("overlay");
+    }
 
     navigator.clipboard.writeText(url.toString());
     toast.success("Share URL copied to clipboard!");
@@ -148,23 +260,21 @@ export default function TemplateEditor({ slug }: TemplateEditorProps) {
   return (
     <div className="min-h-[calc(100vh-112px)] bg-neutral-950 px-6 py-8 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        {/* Header */}
         <div className="mb-8">
           <Link
             href="/templates"
-            className="text-sm text-neutral-400 hover:text-white mb-2 inline-flex items-center gap-1"
+            className="mb-2 inline-flex items-center gap-1 text-sm text-neutral-400 hover:text-white"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Back to Templates
           </Link>
-          <h1 className="text-3xl font-bold text-white mt-2">{template.name} Template</h1>
-          <p className="text-neutral-400 mt-1">{template.description}</p>
+          <h1 className="mt-2 text-3xl font-bold text-white">{template.name} Template</h1>
+          <p className="mt-1 text-neutral-400">{template.description}</p>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-2">
-          {/* Preview */}
           <div>
             <Card className="overflow-hidden">
               <div className="relative aspect-[1200/630] bg-neutral-800">
@@ -184,14 +294,13 @@ export default function TemplateEditor({ slug }: TemplateEditorProps) {
                   </div>
                 )}
                 {isGenerating && previewUrl && (
-                  <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                  <div className="absolute right-2 top-2 rounded bg-blue-500 px-2 py-1 text-xs text-white">
                     Updating...
                   </div>
                 )}
               </div>
             </Card>
 
-            {/* Actions */}
             <div className="mt-4 flex gap-3">
               <Button
                 onClick={handleDownload}
@@ -206,14 +315,12 @@ export default function TemplateEditor({ slug }: TemplateEditorProps) {
             </div>
           </div>
 
-          {/* Editor */}
           <div className="space-y-6">
-            {/* Content */}
             <Card className="p-4">
-              <h2 className="text-lg font-semibold text-white mb-4">Content</h2>
+              <h2 className="mb-4 text-lg font-semibold text-white">Content</h2>
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="title-input" className="block text-sm font-medium text-neutral-400 mb-1">
+                  <label htmlFor="title-input" className="mb-1 block text-sm font-medium text-neutral-400">
                     Title
                   </label>
                   <Input
@@ -224,7 +331,7 @@ export default function TemplateEditor({ slug }: TemplateEditorProps) {
                   />
                 </div>
                 <div>
-                  <label htmlFor="description-input" className="block text-sm font-medium text-neutral-400 mb-1">
+                  <label htmlFor="description-input" className="mb-1 block text-sm font-medium text-neutral-400">
                     Description
                   </label>
                   <Input
@@ -235,40 +342,33 @@ export default function TemplateEditor({ slug }: TemplateEditorProps) {
                   />
                 </div>
                 <div>
-                  <label htmlFor="icon-select" className="block text-sm font-medium text-neutral-400 mb-1">
-                    Icon
+                  <label htmlFor="icon-input" className="mb-1 block text-sm font-medium text-neutral-400">
+                    Icon / Emoji
                   </label>
-                  <select
-                    id="icon-select"
+                  <Input
+                    id="icon-input"
                     value={content.icon}
                     onChange={(e) => setContent({ icon: e.target.value })}
-                    className="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  >
-                    {["sparkles", "rocket", "lightning", "star", "heart", "fire", "globe", "code", "book", "briefcase"].map((icon) => (
-                      <option key={icon} value={icon}>
-                        {icon}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="⚡"
+                  />
                 </div>
               </div>
             </Card>
 
-            {/* Colors */}
             <Card className="p-4">
-              <h2 className="text-lg font-semibold text-white mb-4">Colors</h2>
+              <h2 className="mb-4 text-lg font-semibold text-white">Colors</h2>
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="bg-color" className="block text-sm font-medium text-neutral-400 mb-1">
+                  <label htmlFor="bg-color" className="mb-1 block text-sm font-medium text-neutral-400">
                     Background
                   </label>
                   <div className="flex gap-2">
                     <input
                       type="color"
                       id="bg-color"
-                      value={styling.backgroundColor.startsWith("linear") ? "#000000" : styling.backgroundColor}
+                      value={safeHexFromParam(styling.backgroundColor) ?? "#000000"}
                       onChange={(e) => setStyling({ backgroundColor: e.target.value })}
-                      className="h-10 w-10 rounded border border-neutral-700 bg-transparent cursor-pointer"
+                      className="h-10 w-10 cursor-pointer rounded border border-neutral-700 bg-transparent"
                       aria-label="Background color picker"
                     />
                     <Input
@@ -281,16 +381,16 @@ export default function TemplateEditor({ slug }: TemplateEditorProps) {
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="text-color" className="block text-sm font-medium text-neutral-400 mb-1">
+                  <label htmlFor="text-color" className="mb-1 block text-sm font-medium text-neutral-400">
                     Text Color
                   </label>
                   <div className="flex gap-2">
                     <input
                       type="color"
                       id="text-color"
-                      value={styling.textColor}
+                      value={safeHexFromParam(styling.textColor) ?? "#ffffff"}
                       onChange={(e) => setStyling({ textColor: e.target.value })}
-                      className="h-10 w-10 rounded border border-neutral-700 bg-transparent cursor-pointer"
+                      className="h-10 w-10 cursor-pointer rounded border border-neutral-700 bg-transparent"
                       aria-label="Text color picker"
                     />
                     <Input
@@ -303,16 +403,16 @@ export default function TemplateEditor({ slug }: TemplateEditorProps) {
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="accent-color" className="block text-sm font-medium text-neutral-400 mb-1">
+                  <label htmlFor="accent-color" className="mb-1 block text-sm font-medium text-neutral-400">
                     Accent Color
                   </label>
                   <div className="flex gap-2">
                     <input
                       type="color"
                       id="accent-color"
-                      value={styling.accentColor}
+                      value={safeHexFromParam(styling.accentColor) ?? "#3b82f6"}
                       onChange={(e) => setStyling({ accentColor: e.target.value })}
-                      className="h-10 w-10 rounded border border-neutral-700 bg-transparent cursor-pointer"
+                      className="h-10 w-10 cursor-pointer rounded border border-neutral-700 bg-transparent"
                       aria-label="Accent color picker"
                     />
                     <Input
@@ -327,7 +427,6 @@ export default function TemplateEditor({ slug }: TemplateEditorProps) {
               </div>
             </Card>
 
-            {/* Use in Main Editor */}
             <Link href="/" className="block">
               <Button
                 variant="outline"

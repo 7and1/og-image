@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+
+    // Cloudflare Pages Functions are not linted by Next.
+    // (They run in a separate environment + tsconfig.)
+    "functions/**",
   ]),
 ]);
 

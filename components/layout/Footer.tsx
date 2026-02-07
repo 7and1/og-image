@@ -13,20 +13,20 @@ export function Footer() {
           </div>
 
           <nav className="flex items-center gap-6 text-sm text-neutral-500">
-            <Link href="/docs" className="hover:text-white transition-colors">
+            <Link href="/docs" className="transition-colors hover:text-white">
               Docs
             </Link>
-            <a
-              href="mailto:hi@og-image.org"
-              className="hover:text-white transition-colors"
-            >
-              Contact
-            </a>
+            <Link href="/docs/api" className="transition-colors hover:text-white">
+              API
+            </Link>
+            <Link href="/templates" className="transition-colors hover:text-white">
+              Templates
+            </Link>
             <a
               href="https://github.com/7and1/og-image"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-white transition-colors"
+              className="transition-colors hover:text-white"
             >
               GitHub
             </a>

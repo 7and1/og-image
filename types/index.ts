@@ -9,7 +9,18 @@ export type TemplateId =
   | "split"
   | "glass"
   | "startup"
-  | "blog";
+  | "blog"
+  | "photo-hero"
+  | "photo-glass"
+  | "photo-caption"
+  | "photo-split"
+  | "photo-duotone"
+  | "photo-frame";
+
+/**
+ * Background mode options
+ */
+export type BackgroundMode = "color" | "photo" | "upload";
 
 /**
  * Font family options
@@ -42,9 +53,68 @@ export interface TemplateProps {
   backgroundColor: string;
   textColor: string;
   accentColor: string;
+  backgroundMode?: BackgroundMode;
+  backgroundId?: string | null;
+  backgroundImageSrc?: string | null;
+  overlayOpacity?: number;
   fontFamily?: FontFamily;
   fontSize?: FontSize;
   layout?: Layout;
+}
+
+export interface BackgroundAttribution {
+  photographerName: string | null;
+  photographerUsername: string | null;
+  photographerProfileUrl: string | null;
+  unsplashPageUrl: string | null;
+}
+
+export interface BackgroundCatalogItem {
+  id: string;
+  provider: "unsplash";
+  category: string;
+  title: string | null;
+  dominantColor: string | null;
+  width: number | null;
+  height: number | null;
+  blurHash: string | null;
+  urls: {
+    og: string;
+    small: string;
+    thumb: string;
+    raw: string;
+  };
+  attribution: BackgroundAttribution;
+}
+
+export interface BackgroundCatalogCategory {
+  id: string;
+  label: string;
+  count: number;
+  query: string;
+}
+
+export interface BackgroundCatalog {
+  provider: "unsplash";
+  app: string;
+  generatedAt: string;
+  categories: BackgroundCatalogCategory[];
+  items: BackgroundCatalogItem[];
+}
+
+export interface TemplateCatalogItem {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  defaultProps: {
+    backgroundColor: string | null;
+    textColor: string | null;
+    accentColor: string | null;
+    backgroundMode: BackgroundMode | null;
+    backgroundId: string | null;
+    overlayOpacity: number | null;
+  };
 }
 
 /**

@@ -1,419 +1,232 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: "API Documentation - OG Image URL Parameters | og-image.org",
+  title: "OG Image API - PNG/SVG Templates + Background Catalog | og-image.org",
   description:
-    "Complete API reference for og-image.org URL parameters. Learn how to generate OG images programmatically with query parameters.",
+    "Free OG API with template rendering, SVG/PNG output, photo background catalog, and strict rate limiting. No auth required.",
   openGraph: {
-    title: "API Documentation - OG Image URL Parameters",
+    title: "OG Image API - PNG/SVG Templates + Background Catalog",
     description:
-      "Complete API reference for og-image.org URL parameters.",
+      "Use /api/og, /api/templates, and /api/backgrounds to generate and integrate social images.",
     url: "https://og-image.org/docs/api",
   },
 };
 
+const baseUrl = "https://og-image.org";
+
+const apiExamples = [
+  {
+    title: "Template + PNG (default)",
+    image: "/docs/api-examples/api-dark.png",
+    url: "/api/og?template=photo-hero&title=Product+Launch&description=Ship+faster+with+og-image.org&bgId=qOGTYdYWQ7I",
+  },
+  {
+    title: "Template + SVG",
+    image: "/docs/api-examples/api-light.png",
+    url: "/api/og?template=minimal&title=Weekly+Report&description=KPI+up+34%25&format=svg&bg=ffffff&text=171717&accent=3b82f6",
+  },
+  {
+    title: "Catalog photo + overlay",
+    image: "/docs/api-examples/api-sunset-brand.png",
+    url: "/api/og?template=photo-glass&title=Design+System&description=Production+UI+in+days&bgId=Q1p7bh3SHj8&overlay=0.65",
+  },
+];
+
 export default function ApiDocsPage() {
   return (
     <article>
-      <h1 className="text-4xl font-bold tracking-tight text-white mb-6">
-        API Documentation
-      </h1>
+      <h1 className="mb-6 text-4xl font-bold tracking-tight text-white">API Documentation</h1>
 
-      <p className="text-xl text-neutral-300 mb-8 leading-relaxed">
-        og-image.org supports URL parameters for creating shareable template links and
-        pre-populated generators. This reference covers all available parameters and
-        how to use them effectively.
+      <p className="mb-8 text-xl leading-relaxed text-neutral-300">
+        og-image.org exposes a no-auth API surface for image rendering and catalog discovery.
+        The API is designed for static sites, edge functions, and backend automation workflows.
       </p>
 
-      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-8">
-        <p className="text-blue-400 font-medium">
-          Note: og-image.org is a client-side tool. These URL parameters configure the generator
-          interface—they don't generate images server-side. For server-side OG image generation,
-          see our <Link href="/docs/guides/nextjs" className="underline">Next.js guide</Link>.
-        </p>
+      <div className="mb-8 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-5">
+        <h2 className="mb-2 text-lg font-semibold text-emerald-300">Available Endpoints</h2>
+        <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-emerald-200/90">
+          <li>
+            <code className="text-emerald-100">GET /api/og</code> — render OG images from template parameters.
+          </li>
+          <li>
+            <code className="text-emerald-100">GET /api/templates</code> — list available templates and defaults.
+          </li>
+          <li>
+            <code className="text-emerald-100">GET /api/backgrounds</code> — list/search curated background photos.
+          </li>
+        </ul>
       </div>
 
-      <h2 className="text-2xl font-bold text-white mt-12 mb-4">
-        Template URL Structure
-      </h2>
+      <h2 className="mb-4 mt-12 text-2xl font-bold text-white">1) Render Endpoint: /api/og</h2>
 
-      <p className="text-neutral-300 mb-4 leading-relaxed">
-        Create shareable links to the generator with pre-filled values using query parameters:
+      <p className="mb-4 leading-relaxed text-neutral-300">
+        Generate Open Graph images via URL parameters. Default output is PNG.
+        Set <code>format=svg</code> for SVG output.
       </p>
 
-      <pre className="bg-neutral-900 border border-neutral-800 rounded-lg p-4 mb-6 overflow-x-auto">
-        <code className="text-sm text-neutral-300">{`https://og-image.org/templates/{template-id}?title=Your+Title&description=Your+Description`}</code>
+      <pre className="mb-6 overflow-x-auto rounded-lg border border-neutral-800 bg-neutral-900 p-4">
+        <code className="text-sm text-neutral-300">
+          {`GET ${baseUrl}/api/og?template=photo-hero&title=Hello+World&description=Launch+day&bgId=qOGTYdYWQ7I&format=png`}
+        </code>
       </pre>
 
-      <h2 className="text-2xl font-bold text-white mt-12 mb-4">
-        Available Parameters
-      </h2>
+      <h3 className="mb-3 mt-8 text-lg font-semibold text-white">Query Parameters</h3>
 
-      <div className="overflow-x-auto mb-8">
+      <div className="mb-8 overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-neutral-800">
-              <th className="text-left py-3 px-4 text-white font-semibold">Parameter</th>
-              <th className="text-left py-3 px-4 text-white font-semibold">Type</th>
-              <th className="text-left py-3 px-4 text-white font-semibold">Description</th>
+              <th className="px-4 py-3 text-left font-semibold text-white">Parameter</th>
+              <th className="px-4 py-3 text-left font-semibold text-white">Type</th>
+              <th className="px-4 py-3 text-left font-semibold text-white">Required</th>
+              <th className="px-4 py-3 text-left font-semibold text-white">Rules</th>
             </tr>
           </thead>
           <tbody>
             <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300 font-mono">title</td>
-              <td className="py-3 px-4 text-neutral-400">string</td>
-              <td className="py-3 px-4 text-neutral-400">Main heading text for the OG image</td>
+              <td className="px-4 py-3 font-mono text-neutral-300">template</td>
+              <td className="px-4 py-3 text-neutral-400">string</td>
+              <td className="px-4 py-3 text-neutral-400">No</td>
+              <td className="px-4 py-3 text-neutral-400">Template ID from <code>/api/templates</code>. Defaults to <code>gradient</code>.</td>
             </tr>
             <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300 font-mono">description</td>
-              <td className="py-3 px-4 text-neutral-400">string</td>
-              <td className="py-3 px-4 text-neutral-400">Secondary text/subtitle (alias: desc)</td>
+              <td className="px-4 py-3 font-mono text-neutral-300">title</td>
+              <td className="px-4 py-3 text-neutral-400">string</td>
+              <td className="px-4 py-3 text-neutral-400">No</td>
+              <td className="px-4 py-3 text-neutral-400">Max 80 characters.</td>
             </tr>
             <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300 font-mono">icon</td>
-              <td className="py-3 px-4 text-neutral-400">string</td>
-              <td className="py-3 px-4 text-neutral-400">Icon identifier (e.g., "sparkles", "rocket")</td>
+              <td className="px-4 py-3 font-mono text-neutral-300">description</td>
+              <td className="px-4 py-3 text-neutral-400">string</td>
+              <td className="px-4 py-3 text-neutral-400">No</td>
+              <td className="px-4 py-3 text-neutral-400">Max 200 characters. Alias: <code>subtitle</code>.</td>
             </tr>
             <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300 font-mono">bg</td>
-              <td className="py-3 px-4 text-neutral-400">hex color</td>
-              <td className="py-3 px-4 text-neutral-400">Background color (without #)</td>
+              <td className="px-4 py-3 font-mono text-neutral-300">icon</td>
+              <td className="px-4 py-3 text-neutral-400">string</td>
+              <td className="px-4 py-3 text-neutral-400">No</td>
+              <td className="px-4 py-3 text-neutral-400">Max 12 characters (emoji supported).</td>
             </tr>
             <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300 font-mono">text</td>
-              <td className="py-3 px-4 text-neutral-400">hex color</td>
-              <td className="py-3 px-4 text-neutral-400">Text/foreground color (without #)</td>
+              <td className="px-4 py-3 font-mono text-neutral-300">bg / backgroundColor</td>
+              <td className="px-4 py-3 text-neutral-400">string</td>
+              <td className="px-4 py-3 text-neutral-400">No</td>
+              <td className="px-4 py-3 text-neutral-400">Background string used by template (hex or gradient).</td>
             </tr>
             <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300 font-mono">accent</td>
-              <td className="py-3 px-4 text-neutral-400">hex color</td>
-              <td className="py-3 px-4 text-neutral-400">Accent color for highlights (without #)</td>
+              <td className="px-4 py-3 font-mono text-neutral-300">text / textColor</td>
+              <td className="px-4 py-3 text-neutral-400">hex</td>
+              <td className="px-4 py-3 text-neutral-400">No</td>
+              <td className="px-4 py-3 text-neutral-400">6-digit hex, with or without <code>#</code>.</td>
+            </tr>
+            <tr className="border-b border-neutral-800">
+              <td className="px-4 py-3 font-mono text-neutral-300">accent / accentColor</td>
+              <td className="px-4 py-3 text-neutral-400">hex</td>
+              <td className="px-4 py-3 text-neutral-400">No</td>
+              <td className="px-4 py-3 text-neutral-400">6-digit hex, with or without <code>#</code>.</td>
+            </tr>
+            <tr className="border-b border-neutral-800">
+              <td className="px-4 py-3 font-mono text-neutral-300">bgId</td>
+              <td className="px-4 py-3 text-neutral-400">string</td>
+              <td className="px-4 py-3 text-neutral-400">No</td>
+              <td className="px-4 py-3 text-neutral-400">Background ID from <code>/api/backgrounds</code>.</td>
+            </tr>
+            <tr className="border-b border-neutral-800">
+              <td className="px-4 py-3 font-mono text-neutral-300">overlay</td>
+              <td className="px-4 py-3 text-neutral-400">number</td>
+              <td className="px-4 py-3 text-neutral-400">No</td>
+              <td className="px-4 py-3 text-neutral-400">Clamped to <code>0..1</code>. Default <code>0.55</code>.</td>
+            </tr>
+            <tr className="border-b border-neutral-800">
+              <td className="px-4 py-3 font-mono text-neutral-300">format</td>
+              <td className="px-4 py-3 text-neutral-400">enum</td>
+              <td className="px-4 py-3 text-neutral-400">No</td>
+              <td className="px-4 py-3 text-neutral-400"><code>png</code> (default) or <code>svg</code>.</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <h2 className="text-2xl font-bold text-white mt-12 mb-4">
-        Available Templates
-      </h2>
+      <h3 className="mb-3 mt-8 text-lg font-semibold text-white">Example Outputs</h3>
 
-      <p className="text-neutral-300 mb-4 leading-relaxed">
-        Use these template IDs in your URLs:
-      </p>
-
-      <div className="overflow-x-auto mb-8">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-neutral-800">
-              <th className="text-left py-3 px-4 text-white font-semibold">Template ID</th>
-              <th className="text-left py-3 px-4 text-white font-semibold">Name</th>
-              <th className="text-left py-3 px-4 text-white font-semibold">Best For</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300 font-mono">gradient</td>
-              <td className="py-3 px-4 text-neutral-400">Gradient</td>
-              <td className="py-3 px-4 text-neutral-400">Modern SaaS, tech products</td>
-            </tr>
-            <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300 font-mono">minimal</td>
-              <td className="py-3 px-4 text-neutral-400">Minimal</td>
-              <td className="py-3 px-4 text-neutral-400">Clean blogs, documentation</td>
-            </tr>
-            <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300 font-mono">modern</td>
-              <td className="py-3 px-4 text-neutral-400">Modern</td>
-              <td className="py-3 px-4 text-neutral-400">Professional portfolios</td>
-            </tr>
-            <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300 font-mono">bold</td>
-              <td className="py-3 px-4 text-neutral-400">Bold</td>
-              <td className="py-3 px-4 text-neutral-400">Statements, announcements</td>
-            </tr>
-            <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300 font-mono">split</td>
-              <td className="py-3 px-4 text-neutral-400">Split</td>
-              <td className="py-3 px-4 text-neutral-400">Two-tone designs</td>
-            </tr>
-            <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300 font-mono">glass</td>
-              <td className="py-3 px-4 text-neutral-400">Glass</td>
-              <td className="py-3 px-4 text-neutral-400">Trendy, modern look</td>
-            </tr>
-            <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300 font-mono">startup</td>
-              <td className="py-3 px-4 text-neutral-400">Startup</td>
-              <td className="py-3 px-4 text-neutral-400">Product launches, startups</td>
-            </tr>
-            <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300 font-mono">blog</td>
-              <td className="py-3 px-4 text-neutral-400">Blog</td>
-              <td className="py-3 px-4 text-neutral-400">Article previews, blogs</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2 className="text-2xl font-bold text-white mt-12 mb-4">
-        URL Encoding
-      </h2>
-
-      <p className="text-neutral-300 mb-4 leading-relaxed">
-        Parameters must be URL-encoded. Here are common characters and their encodings:
-      </p>
-
-      <div className="overflow-x-auto mb-8">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-neutral-800">
-              <th className="text-left py-3 px-4 text-white font-semibold">Character</th>
-              <th className="text-left py-3 px-4 text-white font-semibold">Encoding</th>
-              <th className="text-left py-3 px-4 text-white font-semibold">Example</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300">Space</td>
-              <td className="py-3 px-4 text-neutral-400 font-mono">%20 or +</td>
-              <td className="py-3 px-4 text-neutral-400 font-mono">Hello+World</td>
-            </tr>
-            <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300">&</td>
-              <td className="py-3 px-4 text-neutral-400 font-mono">%26</td>
-              <td className="py-3 px-4 text-neutral-400 font-mono">Tom%26Jerry</td>
-            </tr>
-            <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300">#</td>
-              <td className="py-3 px-4 text-neutral-400 font-mono">%23</td>
-              <td className="py-3 px-4 text-neutral-400 font-mono">%23trending</td>
-            </tr>
-            <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300">=</td>
-              <td className="py-3 px-4 text-neutral-400 font-mono">%3D</td>
-              <td className="py-3 px-4 text-neutral-400 font-mono">1%3D1</td>
-            </tr>
-            <tr className="border-b border-neutral-800">
-              <td className="py-3 px-4 text-neutral-300">?</td>
-              <td className="py-3 px-4 text-neutral-400 font-mono">%3F</td>
-              <td className="py-3 px-4 text-neutral-400 font-mono">What%3F</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <p className="text-neutral-300 mb-8 leading-relaxed">
-        Most programming languages have built-in URL encoding. In JavaScript:
-      </p>
-
-      <pre className="bg-neutral-900 border border-neutral-800 rounded-lg p-4 mb-8 overflow-x-auto">
-        <code className="text-sm text-neutral-300">{`const title = encodeURIComponent("What's New in 2024?")
-const url = \`https://og-image.org/templates/gradient?title=\${title}\``}</code>
-      </pre>
-
-      <h2 className="text-2xl font-bold text-white mt-12 mb-4">
-        Examples
-      </h2>
-
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Basic Template Link</h3>
-
-      <pre className="bg-neutral-900 border border-neutral-800 rounded-lg p-4 mb-6 overflow-x-auto">
-        <code className="text-sm text-neutral-300">{`https://og-image.org/templates/gradient?title=Hello+World&description=My+first+OG+image`}</code>
-      </pre>
-
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">With Custom Colors</h3>
-
-      <pre className="bg-neutral-900 border border-neutral-800 rounded-lg p-4 mb-6 overflow-x-auto">
-        <code className="text-sm text-neutral-300">{`https://og-image.org/templates/minimal?title=Product+Launch&bg=1a1a2e&text=ffffff&accent=e94560`}</code>
-      </pre>
-
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">With Icon</h3>
-
-      <pre className="bg-neutral-900 border border-neutral-800 rounded-lg p-4 mb-6 overflow-x-auto">
-        <code className="text-sm text-neutral-300">{`https://og-image.org/templates/startup?title=Launching+Soon&description=Join+the+waitlist&icon=rocket`}</code>
-      </pre>
-
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Full Example</h3>
-
-      <pre className="bg-neutral-900 border border-neutral-800 rounded-lg p-4 mb-8 overflow-x-auto">
-        <code className="text-sm text-neutral-300">{`https://og-image.org/templates/bold?title=The+Ultimate+Guide&description=Everything+you+need+to+know&icon=book&bg=0f172a&text=f8fafc&accent=3b82f6`}</code>
-      </pre>
-
-      <h2 className="text-2xl font-bold text-white mt-12 mb-4">
-        Available Icons
-      </h2>
-
-      <p className="text-neutral-300 mb-4 leading-relaxed">
-        The <code className="bg-neutral-800 px-1.5 py-0.5 rounded text-sm">icon</code> parameter
-        accepts the following values:
-      </p>
-
-      <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 mb-8">
-        {[
-          "sparkles", "rocket", "lightning", "star", "heart", "fire",
-          "globe", "code", "book", "briefcase", "chart", "check",
-          "clock", "cloud", "cog", "cube", "document", "download",
-          "flag", "folder", "gift", "home", "key", "link",
-          "location", "lock", "mail", "megaphone", "moon", "music",
-          "pencil", "phone", "photo", "play", "puzzle", "search",
-          "shield", "shopping", "sun", "tag", "terminal", "trophy",
-          "user", "video", "wifi", "zap"
-        ].map((icon) => (
-          <div
-            key={icon}
-            className="bg-neutral-900 border border-neutral-800 rounded px-3 py-2"
-          >
-            <code className="text-sm text-neutral-300">{icon}</code>
-          </div>
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {apiExamples.map((example) => (
+          <figure key={example.title} className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900">
+            <div className="relative aspect-[1200/630] bg-neutral-800">
+              <Image
+                src={example.image}
+                alt={example.title}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                className="object-cover"
+              />
+            </div>
+            <figcaption className="space-y-2 p-3">
+              <div className="text-sm font-medium text-white">{example.title}</div>
+              <pre className="overflow-x-auto rounded-lg border border-neutral-800 bg-neutral-950 p-3">
+                <code className="text-xs text-neutral-400">{`GET ${baseUrl}${example.url}`}</code>
+              </pre>
+            </figcaption>
+          </figure>
         ))}
       </div>
 
-      <h2 className="text-2xl font-bold text-white mt-12 mb-4">
-        Color Format
-      </h2>
-
-      <p className="text-neutral-300 mb-4 leading-relaxed">
-        Colors are specified as 6-character hex codes without the # prefix:
-      </p>
-
-      <pre className="bg-neutral-900 border border-neutral-800 rounded-lg p-4 mb-6 overflow-x-auto">
-        <code className="text-sm text-neutral-300">{`// Correct
-?bg=000000&text=ffffff&accent=3b82f6
-
-// Incorrect (don't use #)
-?bg=#000000  ❌`}</code>
-      </pre>
-
-      <h2 className="text-2xl font-bold text-white mt-12 mb-4">
-        Programmatic Usage
-      </h2>
-
-      <p className="text-neutral-300 mb-4 leading-relaxed">
-        Generate shareable links in your application:
-      </p>
-
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">JavaScript/TypeScript</h3>
-
-      <pre className="bg-neutral-900 border border-neutral-800 rounded-lg p-4 mb-6 overflow-x-auto">
-        <code className="text-sm text-neutral-300">{`function generateOgImageUrl(options: {
-  template: string
-  title: string
-  description?: string
-  icon?: string
-  bg?: string
-  text?: string
-  accent?: string
-}) {
-  const params = new URLSearchParams()
-
-  if (options.title) params.set('title', options.title)
-  if (options.description) params.set('description', options.description)
-  if (options.icon) params.set('icon', options.icon)
-  if (options.bg) params.set('bg', options.bg)
-  if (options.text) params.set('text', options.text)
-  if (options.accent) params.set('accent', options.accent)
-
-  return \`https://og-image.org/templates/\${options.template}?\${params.toString()}\`
-}
-
-// Usage
-const url = generateOgImageUrl({
-  template: 'gradient',
-  title: 'My Awesome Article',
-  description: 'Learn something new today',
-  bg: '0f172a',
-  accent: '3b82f6'
-})`}</code>
-      </pre>
-
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Python</h3>
-
-      <pre className="bg-neutral-900 border border-neutral-800 rounded-lg p-4 mb-6 overflow-x-auto">
-        <code className="text-sm text-neutral-300">{`from urllib.parse import urlencode
-
-def generate_og_image_url(template, **kwargs):
-    params = {k: v for k, v in kwargs.items() if v}
-    query = urlencode(params)
-    return f"https://og-image.org/templates/{template}?{query}"
-
-# Usage
-url = generate_og_image_url(
-    "gradient",
-    title="My Awesome Article",
-    description="Learn something new today",
-    bg="0f172a",
-    accent="3b82f6"
-)`}</code>
-      </pre>
-
-      <h2 className="text-2xl font-bold text-white mt-12 mb-4">
-        Use Cases
-      </h2>
-
-      <div className="space-y-4 mb-8">
-        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-4">
-          <h3 className="font-semibold text-white mb-2">Shareable Template Links</h3>
-          <p className="text-neutral-400 text-sm">
-            Let users share pre-configured templates with their team or community. They can
-            click the link and immediately see the generator with their settings.
-          </p>
-        </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-4">
-          <h3 className="font-semibold text-white mb-2">CMS Integration</h3>
-          <p className="text-neutral-400 text-sm">
-            Generate "Create OG Image" links in your CMS that pre-populate the generator with
-            article titles and descriptions.
-          </p>
-        </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-4">
-          <h3 className="font-semibold text-white mb-2">Team Branding</h3>
-          <p className="text-neutral-400 text-sm">
-            Create a base URL with your brand colors, then share it with your team. Everyone
-            creates on-brand images by just changing the title.
-          </p>
-        </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-4">
-          <h3 className="font-semibold text-white mb-2">Documentation Links</h3>
-          <p className="text-neutral-400 text-sm">
-            Include "Generate OG Image" buttons in your documentation that open the generator
-            with appropriate templates for different content types.
-          </p>
-        </div>
-      </div>
-
-      <h2 className="text-2xl font-bold text-white mt-12 mb-4">
-        Limitations
-      </h2>
-
-      <ul className="list-disc list-inside text-neutral-300 mb-8 space-y-2">
-        <li>URL parameters configure the interface; they don't generate images server-side</li>
-        <li>Maximum URL length is ~2000 characters (browser limit)</li>
-        <li>Custom fonts and advanced styling require using the interface directly</li>
-        <li>Images must be downloaded manually or through automation</li>
+      <h3 className="mb-3 mt-8 text-lg font-semibold text-white">Rate Limits</h3>
+      <ul className="mb-8 list-inside list-disc space-y-2 text-neutral-300">
+        <li>2 requests / 10 seconds / IP</li>
+        <li>5 requests / minute / IP</li>
+        <li>25 requests / hour / IP</li>
       </ul>
 
-      <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 mt-12">
-        <h3 className="font-semibold text-white mb-3">Need Server-Side Generation?</h3>
-        <p className="text-neutral-400 mb-4">
-          For programmatic, server-side OG image generation, check out our framework guides.
-          They cover how to generate images dynamically at build time or on-demand.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/docs/guides/nextjs"
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
-          >
-            Next.js Guide
-          </Link>
-          <Link
-            href="/docs/guides/react"
-            className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white text-sm font-medium rounded-lg transition-colors"
-          >
-            React Guide
-          </Link>
-        </div>
-      </div>
+      <p className="mb-6 text-sm text-neutral-400">
+        Response headers include <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>,
+        <code> X-RateLimit-Reset</code>, and <code>Retry-After</code> on 429 responses.
+      </p>
+
+      <h2 className="mb-4 mt-12 text-2xl font-bold text-white">2) Catalog Endpoint: /api/backgrounds</h2>
+
+      <pre className="mb-6 overflow-x-auto rounded-lg border border-neutral-800 bg-neutral-900 p-4">
+        <code className="text-sm text-neutral-300">
+          {`GET ${baseUrl}/api/backgrounds?category=technology&search=neon&limit=30&offset=0`}
+        </code>
+      </pre>
+
+      <ul className="mb-6 list-inside list-disc space-y-2 text-neutral-300">
+        <li><code>id</code>: fetch single item by ID.</li>
+        <li><code>category</code>: filter by category.</li>
+        <li><code>search</code>: fuzzy text search over ID/title/author.</li>
+        <li><code>limit</code>: 1..200 (default 30).</li>
+        <li><code>offset</code>: pagination offset (default 0).</li>
+      </ul>
+
+      <h2 className="mb-4 mt-12 text-2xl font-bold text-white">3) Template Catalog Endpoint: /api/templates</h2>
+
+      <pre className="mb-6 overflow-x-auto rounded-lg border border-neutral-800 bg-neutral-900 p-4">
+        <code className="text-sm text-neutral-300">
+          {`GET ${baseUrl}/api/templates?category=social&search=photo`}
+        </code>
+      </pre>
+
+      <ul className="mb-6 list-inside list-disc space-y-2 text-neutral-300">
+        <li><code>id</code>: fetch single template item.</li>
+        <li><code>category</code>: filter templates by category.</li>
+        <li><code>search</code>: search by name/description/id.</li>
+      </ul>
+
+      <h2 className="mb-4 mt-12 text-2xl font-bold text-white">Error Format</h2>
+
+      <pre className="mb-6 overflow-x-auto rounded-lg border border-neutral-800 bg-neutral-900 p-4">
+        <code className="text-sm text-neutral-300">
+          {`{
+  "success": false,
+  "error": {
+    "code": "TITLE_TOO_LONG",
+    "message": "title must be <= 80 characters"
+  }
+}`}
+        </code>
+      </pre>
     </article>
   );
 }
