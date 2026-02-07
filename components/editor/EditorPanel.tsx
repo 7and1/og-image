@@ -28,7 +28,7 @@ export function EditorPanel() {
     useActions();
 
   return (
-    <div className="flex h-full w-[380px] flex-shrink-0 flex-col border-r border-neutral-800 bg-neutral-900">
+    <div className="flex h-full w-full flex-shrink-0 flex-col border-r border-neutral-800 bg-neutral-900 lg:w-[380px]">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-neutral-800 px-5 py-4">
         <h2 className="text-lg font-semibold text-white">Editor</h2>
@@ -219,10 +219,10 @@ const gradientPresets = [
   "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
   "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)",
   "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
-  "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
   "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
   "linear-gradient(135deg, #fc466b 0%, #3f5efb 100%)",
   "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
+  "linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)",
 ];
 
 export default EditorPanel;

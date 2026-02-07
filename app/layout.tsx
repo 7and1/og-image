@@ -53,6 +53,47 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  alternates: {
+    canonical: "https://og-image.org",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "OG Image Generator",
+  url: "https://og-image.org",
+  description:
+    "Free, open-source Open Graph image generator. Create beautiful social media preview images for Twitter, LinkedIn, and Facebook.",
+  applicationCategory: "DesignApplication",
+  operatingSystem: "Any",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
+  featureList: [
+    "Create OG images for social media",
+    "Multiple templates",
+    "Custom backgrounds",
+    "Client-side rendering",
+    "No data upload required",
+    "Export as PNG or SVG",
+  ],
+  screenshot: "https://og-image.org/og-image.png",
+  softwareHelp: {
+    "@type": "CreativeWork",
+    url: "https://og-image.org/docs",
+  },
+};
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "og-image.org",
+  url: "https://og-image.org",
+  logo: "https://og-image.org/logo.png",
+  sameAs: [],
 };
 
 export default function RootLayout({
@@ -62,6 +103,30 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
+      <head>
+        {/* Preload critical assets for faster first render */}
+        <link
+          rel="preload"
+          href="/resvg.wasm"
+          as="fetch"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/Inter-Bold.ttf"
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+      </head>
       <body className={`${inter.variable} font-sans antialiased bg-neutral-950 text-white min-h-screen flex flex-col`}>
         <a
           href="#main-content"

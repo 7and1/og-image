@@ -11,3 +11,4 @@ export {
 } from "./Card";
 export { Tabs, TabsList, TabsTrigger, TabsContent } from "./Tabs";
 export { CodeHighlight } from "./CodeHighlight";
+export { ErrorBoundary } from "./ErrorBoundary";

@@ -450,9 +450,27 @@ export const onRequestGet: PagesFunction<ApiContextEnv> = async (context) => {
   const requestUrl = new URL(context.request.url);
   const { params, warnings } = await buildOgParams(requestUrl, context.env);
 
-  const cacheUrl = new URL(requestUrl.toString());
-  cacheUrl.searchParams.set("_v", CACHE_VERSION);
-  cacheUrl.searchParams.set("_fmt", params.format);
+  // Normalize cache key: sort params alphabetically for consistent cache hits
+  const cacheUrl = new URL(requestUrl.origin + requestUrl.pathname);
+  const sortedParams = [
+    ["title", params.title],
+    ["description", params.description],
+    ["icon", params.icon],
+    ["template", params.template],
+    ["backgroundColor", params.backgroundColor],
+    ["textColor", params.textColor],
+    ["accentColor", params.accentColor],
+    ["bgId", params.backgroundId || ""],
+    ["overlay", String(params.overlayOpacity)],
+    ["format", params.format],
+    ["_v", CACHE_VERSION],
+  ].sort((a, b) => a[0].localeCompare(b[0]));
+
+  for (const [key, value] of sortedParams) {
+    if (value) {
+      cacheUrl.searchParams.set(key, value);
+    }
+  }
   const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
   const cache = caches.default;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useRef, type ReactNode, type KeyboardEvent } from "react";
+import { createContext, useContext, useState, useRef, useEffect, type ReactNode, type KeyboardEvent } from "react";
 import { cn } from "@/lib/utils";
 
 interface TabsContextValue {
@@ -94,10 +94,10 @@ export function TabsTrigger({
   const isActive = activeTab === value;
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Register this tab on mount
-  useState(() => {
+  // Register this tab on mount using useEffect (not useState)
+  useEffect(() => {
     registerTab(value);
-  });
+  }, [value, registerTab]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
     const currentIndex = tabValues.indexOf(value);

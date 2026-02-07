@@ -1,10 +1,11 @@
 "use client";
 
+import { memo } from "react";
 import { useStore } from "@/store/useStore";
 import { Loader2, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function PreviewCanvas() {
+function PreviewCanvasComponent() {
   const { previewUrl, isGenerating, error } = useStore();
 
   return (
@@ -20,15 +21,17 @@ export function PreviewCanvas() {
         {isGenerating && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="text-sm text-neutral-300">Generating...</span>
+              <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
+              <span className="text-sm text-neutral-300" role="status" aria-live="polite">
+                Generating...
+              </span>
             </div>
           </div>
         )}
 
         {/* Error state */}
         {error && !isGenerating && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-neutral-900">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-neutral-900" role="alert">
             <div className="text-red-500 text-sm">{error}</div>
           </div>
         )}
@@ -42,7 +45,7 @@ export function PreviewCanvas() {
           />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-neutral-500">
-            <ImageIcon className="h-12 w-12 mb-3 opacity-50" />
+            <ImageIcon className="h-12 w-12 mb-3 opacity-50" aria-hidden="true" />
             <span className="text-sm">
               {isGenerating ? "Initializing engine..." : "Preview will appear here"}
             </span>
@@ -58,4 +61,5 @@ export function PreviewCanvas() {
   );
 }
 
+export const PreviewCanvas = memo(PreviewCanvasComponent);
 export default PreviewCanvas;

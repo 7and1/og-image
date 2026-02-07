@@ -7,12 +7,24 @@ let wasmInitialized = false;
 let wasmInitializing: Promise<void> | null = null;
 let fontBuffer: ArrayBuffer | null = null;
 let fontLoading: Promise<ArrayBuffer> | null = null;
+
+// LRU cache for emoji data URIs with size limit
+const EMOJI_CACHE_MAX_SIZE = 200;
 const emojiDataUriCache = new Map<string, string>();
 const emojiLoadingCache = new Map<string, Promise<string | null>>();
 const emojiMissCache = new Set<string>();
 
 const TWEMOJI_CDN_BASE =
   "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg";
+
+function evictOldestEmoji(): void {
+  if (emojiDataUriCache.size >= EMOJI_CACHE_MAX_SIZE) {
+    const firstKey = emojiDataUriCache.keys().next().value;
+    if (firstKey) {
+      emojiDataUriCache.delete(firstKey);
+    }
+  }
+}
 
 function toEmojiCodepoints(segment: string): string[] {
   return Array.from(segment)
@@ -56,6 +68,9 @@ function encodeToBase64(input: string): string {
 async function loadEmojiDataUri(segment: string): Promise<string | null> {
   const cached = emojiDataUriCache.get(segment);
   if (cached) {
+    // Move to end for LRU behavior
+    emojiDataUriCache.delete(segment);
+    emojiDataUriCache.set(segment, cached);
     return cached;
   }
 
@@ -76,13 +91,23 @@ async function loadEmojiDataUri(segment: string): Promise<string | null> {
 
     for (const codepoint of candidates) {
       try {
-        const response = await fetch(`${TWEMOJI_CDN_BASE}/${codepoint}.svg`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch(`${TWEMOJI_CDN_BASE}/${codepoint}.svg`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
         if (!response.ok) {
           continue;
         }
 
         const svg = await response.text();
         const dataUri = `data:image/svg+xml;base64,${encodeToBase64(svg)}`;
+
+        // Evict oldest entry if cache is full
+        evictOldestEmoji();
         emojiDataUriCache.set(segment, dataUri);
         return dataUri;
       } catch {
@@ -125,7 +150,9 @@ async function initializeWasm(): Promise<void> {
       const wasmBuffer = await wasmResponse.arrayBuffer();
       await initWasm(wasmBuffer);
       wasmInitialized = true;
-      console.log("[og-engine] WASM initialized successfully");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[og-engine] WASM initialized successfully");
+      }
     } catch (error) {
       wasmInitializing = null;
       console.error("[og-engine] WASM initialization failed:", error);
@@ -157,7 +184,9 @@ async function loadFont(): Promise<ArrayBuffer> {
       }
 
       fontBuffer = await response.arrayBuffer();
-      console.log("[og-engine] Font loaded successfully");
+      if (process.env.NODE_ENV === "development") {
+        console.log("[og-engine] Font loaded successfully");
+      }
       return fontBuffer;
     } catch (error) {
       fontLoading = null;

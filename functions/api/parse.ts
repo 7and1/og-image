@@ -13,6 +13,49 @@ interface ParseResponse {
   error?: string;
 }
 
+const MAX_RESPONSE_SIZE = 5 * 1024 * 1024; // 5MB limit
+
+const BLOCKED_HOSTNAMES = new Set([
+  "localhost",
+  "127.0.0.1",
+  "0.0.0.0",
+  "[::1]",
+  "metadata.google.internal",
+  "169.254.169.254",
+]);
+
+const BLOCKED_HOSTNAME_PATTERNS = [
+  /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/,
+  /^172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/,
+  /^192\.168\.\d{1,3}\.\d{1,3}$/,
+  /^fc00:/i,
+  /^fd00:/i,
+  /^fe80:/i,
+  /\.local$/i,
+  /\.internal$/i,
+  /\.localhost$/i,
+];
+
+function isBlockedUrl(url: URL): boolean {
+  const hostname = url.hostname.toLowerCase();
+
+  if (BLOCKED_HOSTNAMES.has(hostname)) {
+    return true;
+  }
+
+  for (const pattern of BLOCKED_HOSTNAME_PATTERNS) {
+    if (pattern.test(hostname)) {
+      return true;
+    }
+  }
+
+  if (url.protocol !== "https:" && url.protocol !== "http:") {
+    return true;
+  }
+
+  return false;
+}
+
 class MetaExtractor {
   meta: MetaData = {};
   links: string[] = [];
@@ -60,6 +103,17 @@ export const onRequestGet: PagesFunction = async (context) => {
     );
   }
 
+  // SSRF protection: block internal/private IPs
+  if (isBlockedUrl(parsedUrl)) {
+    return new Response(
+      JSON.stringify({ success: false, error: "URL not allowed" }),
+      {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+
   try {
     const response = await fetch(targetUrl, {
       headers: {
@@ -74,6 +128,30 @@ export const onRequestGet: PagesFunction = async (context) => {
         JSON.stringify({ success: false, error: `HTTP ${response.status}` }),
         {
           status: 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Check content length to prevent memory exhaustion
+    const contentLength = response.headers.get("content-length");
+    if (contentLength && parseInt(contentLength, 10) > MAX_RESPONSE_SIZE) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Response too large" }),
+        {
+          status: 413,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Verify content type is HTML
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("text/html") && !contentType.includes("application/xhtml")) {
+      return new Response(
+        JSON.stringify({ success: false, error: "URL does not return HTML" }),
+        {
+          status: 415,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );

@@ -4,11 +4,34 @@
 
 ---
 
+## Quick Deploy
+
+Use the automated deployment script:
+
+```bash
+# Preview deployment
+./scripts/deploy.sh preview
+
+# Production deployment
+./scripts/deploy.sh production
+```
+
+The script handles:
+- Dependency installation
+- Linting and testing
+- Building the project
+- Verifying build output
+- Deploying to Cloudflare Pages
+- Post-deployment health checks
+
+---
+
 ## Prerequisites
 
 - [ ] Cloudflare account
 - [ ] GitHub repository with project code
 - [ ] Domain configured in Cloudflare (for custom domain)
+- [ ] Wrangler CLI authenticated (`npx wrangler login`)
 
 ---
 
@@ -364,6 +387,19 @@ If issues occur:
 2. Navigate to **Deployments**
 3. Find previous working deployment
 4. Click **...** > **Rollback to this deployment**
+
+---
+
+## Security Considerations
+
+See [SECURITY.md](./SECURITY.md) for detailed security documentation.
+
+Key security features:
+- **SSRF Protection**: All fetch endpoints validate URLs against internal/private ranges
+- **Rate Limiting**: Multi-window rate limiting on `/api/og` endpoint
+- **Response Size Limits**: Prevents memory exhaustion attacks
+- **Content Type Validation**: Ensures fetched content matches expected types
+- **Input Validation**: All user inputs are validated and sanitized
 
 ---
 
