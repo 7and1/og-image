@@ -117,6 +117,33 @@ export interface TemplateCatalogItem {
   };
 }
 
+export interface MyTemplatePayload {
+  title: string;
+  description: string;
+  icon: string;
+  template: TemplateId;
+  backgroundColor: string;
+  textColor: string;
+  accentColor: string;
+  backgroundMode: BackgroundMode;
+  backgroundId: string | null;
+  backgroundImageSrc: string | null;
+  overlayOpacity: number;
+  fontFamily: FontFamily;
+  fontSize: FontSize;
+  layout: Layout;
+}
+
+export interface MyTemplateItem {
+  id: string;
+  userKey: string;
+  name: string;
+  templateId: string | null;
+  payload: MyTemplatePayload;
+  createdAt: string;
+  updatedAt: string;
+}
+
 /**
  * Template configuration for the registry
  */

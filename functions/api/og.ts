@@ -3,30 +3,9 @@ import { Resvg, initWasm } from "@resvg/resvg-wasm";
 import wasmModule from "@resvg/resvg-wasm/index_bg.wasm";
 
 import type { OgRequestParams } from "./_lib/og-types";
-import { findBackgroundById } from "./_lib/catalog";
-import {
-  renderTemplate,
-  isOgTemplateId,
-  DEFAULT_TEMPLATE,
-} from "./_lib/og-templates";
-
-type OutputFormat = "png" | "svg";
-
-interface D1QueryResult<T> {
-  results: T[];
-}
-
-interface D1PreparedStatement {
-  all<T = unknown>(): Promise<D1QueryResult<T>>;
-}
-
-interface D1DatabaseLike {
-  prepare(query: string): D1PreparedStatement;
-}
-
-interface ApiContextEnv {
-  OG_DB?: D1DatabaseLike;
-}
+import type { ApiContextEnv } from "./_lib/og-params";
+import { buildOgParams } from "./_lib/og-params";
+import { renderTemplate } from "./_lib/og-templates";
 
 interface CounterBucket {
   count: number;
@@ -249,32 +228,6 @@ function countChars(value: string): number {
   return Array.from(value).length;
 }
 
-function parseHexColor(input: string | null): string | null {
-  if (!input) {
-    return null;
-  }
-  const value = input.trim();
-  if (!value) {
-    return null;
-  }
-  const normalized = value.startsWith("#") ? value.slice(1) : value;
-  if (!/^[0-9a-fA-F]{6}$/.test(normalized)) {
-    return null;
-  }
-  return `#${normalized.toLowerCase()}`;
-}
-
-function parseFloatClamped(input: string | null, fallback: number): number {
-  if (!input) {
-    return fallback;
-  }
-  const value = Number(input);
-  if (!Number.isFinite(value)) {
-    return fallback;
-  }
-  return Math.min(1, Math.max(0, value));
-}
-
 async function ensurePngWasm(): Promise<void> {
   if (pngWasmInitialized) {
     return;
@@ -364,112 +317,21 @@ async function renderPng(
   return new Uint8Array(pngBuffer);
 }
 
-async function buildOgParams(
-  url: URL,
-  env: ApiContextEnv
-): Promise<{
-  params: OgRequestParams;
-  warnings: string[];
-}> {
-  const warnings: string[] = [];
-
-  const rawTemplate = url.searchParams.get("template")?.trim() || "";
-  const template = isOgTemplateId(rawTemplate) ? rawTemplate : DEFAULT_TEMPLATE;
-  if (rawTemplate && rawTemplate !== template) {
-    warnings.push("Unknown template; falling back to default.");
-  }
-
-  const title = url.searchParams.get("title")?.trim() || DEFAULT_TITLE;
-  const description =
-    url.searchParams.get("description")?.trim() ||
-    url.searchParams.get("subtitle")?.trim() ||
-    DEFAULT_DESCRIPTION;
-  const icon = url.searchParams.get("icon")?.trim() || DEFAULT_ICON;
-
-  const backgroundColor =
-    url.searchParams.get("backgroundColor")?.trim() ||
-    url.searchParams.get("bg")?.trim() ||
-    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
-  const textColor =
-    parseHexColor(url.searchParams.get("textColor")) ??
-    parseHexColor(url.searchParams.get("text")) ??
-    "#ffffff";
-  const accentColor =
-    parseHexColor(url.searchParams.get("accentColor")) ??
-    parseHexColor(url.searchParams.get("accent")) ??
-    "#fbbf24";
-
-  let backgroundMode: "color" | "photo" = "color";
-  let backgroundId: string | null = null;
-  let backgroundImageSrc: string | null = null;
-
-  const bgId = url.searchParams.get("bgId")?.trim();
-  if (bgId) {
-    const { item } = await findBackgroundById(bgId, { env });
-    if (item) {
-      backgroundMode = "photo";
-      backgroundId = item.id;
-      backgroundImageSrc = item.urls.og;
-    } else {
-      warnings.push("Unknown bgId; ignoring background image.");
-    }
-  }
-
-  const overlayOpacity = parseFloatClamped(url.searchParams.get("overlay"), 0.55);
-
-  const rawFormat = url.searchParams.get("format")?.trim().toLowerCase();
-  let format: OutputFormat = "png";
-  if (rawFormat === "svg") {
-    format = "svg";
-  } else if (rawFormat === "png" || !rawFormat) {
-    format = "png";
-  } else {
-    warnings.push("Unknown format; falling back to png.");
-  }
-
-  return {
-    params: {
-      template,
-      title,
-      description,
-      icon,
-      backgroundColor,
-      textColor,
-      accentColor,
-      backgroundMode,
-      backgroundId,
-      backgroundImageSrc,
-      overlayOpacity,
-      format,
-    },
-    warnings,
-  };
-}
-
 export const onRequestGet: PagesFunction<ApiContextEnv> = async (context) => {
   const requestUrl = new URL(context.request.url);
   const { params, warnings } = await buildOgParams(requestUrl, context.env);
 
-  // Normalize cache key: sort params alphabetically for consistent cache hits
-  const cacheUrl = new URL(requestUrl.origin + requestUrl.pathname);
-  const sortedParams = [
-    ["title", params.title],
-    ["description", params.description],
-    ["icon", params.icon],
-    ["template", params.template],
-    ["backgroundColor", params.backgroundColor],
-    ["textColor", params.textColor],
-    ["accentColor", params.accentColor],
-    ["bgId", params.backgroundId || ""],
-    ["overlay", String(params.overlayOpacity)],
-    ["format", params.format],
-    ["_v", CACHE_VERSION],
-  ].sort((a, b) => a[0].localeCompare(b[0]));
-
-  for (const [key, value] of sortedParams) {
-    if (value) {
-      cacheUrl.searchParams.set(key, value);
-    }
+  const cacheUrl = new URL(requestUrl.toString());
+  cacheUrl.searchParams.set("_v", CACHE_VERSION);
+  cacheUrl.searchParams.set("_fmt", params.format);
+  cacheUrl.searchParams.set("_tpl", params.template);
+  cacheUrl.searchParams.set("_bg", params.backgroundColor);
+  cacheUrl.searchParams.set("_text", params.textColor);
+  cacheUrl.searchParams.set("_accent", params.accentColor);
+  cacheUrl.searchParams.set("_bgMode", params.backgroundMode);
+  cacheUrl.searchParams.set("_overlay", params.overlayOpacity.toFixed(3));
+  if (params.backgroundId) {
+    cacheUrl.searchParams.set("_bgId", params.backgroundId);
   }
   const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
   const cache = caches.default;
@@ -577,3 +439,4 @@ export const onRequestOptions: PagesFunction = async () => {
     },
   });
 };
+

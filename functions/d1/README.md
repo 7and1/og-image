@@ -1,8 +1,7 @@
 # D1 Schema for OG Catalog + Template Presets
 
 This project supports an optional D1-backed read path in Cloudflare Functions.
-When D1 is not configured, APIs automatically fall back to the static catalog
-and local template registry.
+When D1 is not configured, catalog APIs automatically fall back to static data.
 
 ## Files
 
@@ -10,6 +9,7 @@ and local template registry.
   - `GET /api/backgrounds`
   - `GET /api/templates`
   - `GET /api/og` (when resolving `bgId`)
+  - `GET/POST/DELETE /api/my-templates`
 
 ## Expected Bindings
 
@@ -37,6 +37,22 @@ wrangler d1 execute OG_DB --file=functions/d1/schema.sql
 
 ## Runtime Behavior
 
-- If `OG_DB` is present and query succeeds, APIs return `source: "d1"`.
-- If missing/error/empty, APIs transparently return `source: "static"`.
-- This ensures zero-downtime deployment and safe progressive rollout.
+- If `OG_DB` is present and query succeeds, catalog APIs return `source: "d1"`.
+- If missing/error/empty, catalog APIs transparently return `source: "static"`.
+- `/api/my-templates` requires D1 and returns `501 D1_UNAVAILABLE` without `OG_DB`.
+
+## My Templates Table
+
+`og_user_templates` stores user-saved snapshots:
+
+- `id`: template row id
+- `user_key`: user-defined namespace key
+- `name`: template display name
+- `template_id`: selected base template id
+- `payload`: full editor payload JSON
+- `created_at`, `updated_at`: timestamps
+
+Indexes:
+
+- `idx_og_user_templates_user_key`
+- `idx_og_user_templates_updated_at`

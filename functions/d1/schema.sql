@@ -54,3 +54,32 @@ CREATE INDEX IF NOT EXISTS idx_og_template_presets_category
 
 CREATE INDEX IF NOT EXISTS idx_og_template_presets_enabled
   ON og_template_presets(enabled);
+
+-- User-saved template snapshots
+CREATE TABLE IF NOT EXISTS og_user_templates (
+  id TEXT PRIMARY KEY,
+  user_key TEXT NOT NULL,
+  name TEXT NOT NULL,
+  template_id TEXT,
+  payload TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now')),
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_og_user_templates_user_key
+  ON og_user_templates(user_key);
+
+CREATE INDEX IF NOT EXISTS idx_og_user_templates_updated_at
+  ON og_user_templates(updated_at DESC);
+
+-- User favorite backgrounds (synced from client)
+CREATE TABLE IF NOT EXISTS og_user_favorites (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_key TEXT NOT NULL,
+  background_id TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now')),
+  UNIQUE(user_key, background_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_og_user_favorites_user_key
+  ON og_user_favorites(user_key);

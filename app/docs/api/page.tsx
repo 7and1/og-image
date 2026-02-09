@@ -4,11 +4,11 @@ import Image from "next/image";
 export const metadata: Metadata = {
   title: "OG Image API - PNG/SVG Templates + Background Catalog | og-image.org",
   description:
-    "Free OG API with template rendering, SVG/PNG output, photo background catalog, and strict rate limiting. No auth required.",
+    "Free OG API with template rendering, SVG/PNG output, photo background catalog, template presets, and strict rate limiting. No auth required.",
   openGraph: {
     title: "OG Image API - PNG/SVG Templates + Background Catalog",
     description:
-      "Use /api/og, /api/templates, and /api/backgrounds to generate and integrate social images.",
+      "Use /api/og, /api/templates, /api/backgrounds, and /api/my-templates to generate and manage social image presets.",
     url: "https://og-image.org/docs/api",
   },
 };
@@ -54,6 +54,9 @@ export default function ApiDocsPage() {
           </li>
           <li>
             <code className="text-emerald-100">GET /api/backgrounds</code> — list/search curated background photos.
+          </li>
+          <li>
+            <code className="text-emerald-100">GET/POST/DELETE /api/my-templates</code> — user-scoped saved templates (D1).
           </li>
         </ul>
       </div>
@@ -212,6 +215,52 @@ export default function ApiDocsPage() {
         <li><code>id</code>: fetch single template item.</li>
         <li><code>category</code>: filter templates by category.</li>
         <li><code>search</code>: search by name/description/id.</li>
+      </ul>
+
+      <h2 className="mb-4 mt-12 text-2xl font-bold text-white">4) My Templates Endpoint: /api/my-templates</h2>
+
+      <p className="mb-4 leading-relaxed text-neutral-300">
+        Persist user-scoped templates to D1 so users can keep reusable designs.
+        This endpoint requires the <code>OG_DB</code> binding.
+      </p>
+
+      <pre className="mb-6 overflow-x-auto rounded-lg border border-neutral-800 bg-neutral-900 p-4">
+        <code className="text-sm text-neutral-300">
+          {`GET ${baseUrl}/api/my-templates?userKey=team-marketing
+POST ${baseUrl}/api/my-templates
+PATCH ${baseUrl}/api/my-templates
+DELETE ${baseUrl}/api/my-templates?userKey=team-marketing&id=tpl_xxx`}
+        </code>
+      </pre>
+
+      <ul className="mb-6 list-inside list-disc space-y-2 text-neutral-300">
+        <li><code>GET</code>: list templates for one <code>userKey</code>.</li>
+        <li><code>POST</code>: save template snapshot: <code>{`{ userKey, name?, payload, templateId? }`}</code>.</li>
+        <li><code>PATCH</code>: rename template: <code>{`{ userKey, id, name }`}</code>.</li>
+        <li><code>DELETE</code>: remove a template by <code>id</code> + <code>userKey</code>.</li>
+        <li>If D1 is missing, API returns <code>501 D1_UNAVAILABLE</code>.</li>
+      </ul>
+
+      <h2 className="mb-4 mt-12 text-2xl font-bold text-white">5) Favorites Endpoint: /api/favorites</h2>
+
+      <p className="mb-4 leading-relaxed text-neutral-300">
+        Sync user favorite backgrounds to D1 for cross-device persistence.
+        This endpoint requires the <code>OG_DB</code> binding.
+      </p>
+
+      <pre className="mb-6 overflow-x-auto rounded-lg border border-neutral-800 bg-neutral-900 p-4">
+        <code className="text-sm text-neutral-300">
+          {`GET ${baseUrl}/api/favorites?userKey=team-marketing
+POST ${baseUrl}/api/favorites
+DELETE ${baseUrl}/api/favorites?userKey=team-marketing&id=bg_xxx`}
+        </code>
+      </pre>
+
+      <ul className="mb-6 list-inside list-disc space-y-2 text-neutral-300">
+        <li><code>GET</code>: list favorite background IDs for one <code>userKey</code>.</li>
+        <li><code>POST</code>: sync all favorites (replace): <code>{`{ userKey, ids: string[] }`}</code>.</li>
+        <li><code>DELETE</code>: remove a single favorite by <code>id</code> + <code>userKey</code>.</li>
+        <li>If D1 is missing, API returns <code>501 D1_UNAVAILABLE</code>.</li>
       </ul>
 
       <h2 className="mb-4 mt-12 text-2xl font-bold text-white">Error Format</h2>

@@ -77,7 +77,7 @@ describe("Character Counting", () => {
   });
 
   it("counts mixed content correctly", () => {
-    expect(countChars("Hello 世界 🌍")).toBe(11);
+    expect(countChars("Hello 世界 🌍")).toBe(10);
   });
 });
 

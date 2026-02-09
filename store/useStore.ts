@@ -35,6 +35,10 @@ interface OGState {
   fontSize: FontSize;
   layout: Layout;
 
+  // === Library ===
+  favoriteBackgroundIds: string[];
+  favoritesUserKey: string | null;
+
   // === UI State ===
   isGenerating: boolean;
   previewUrl: string | null;
@@ -62,6 +66,10 @@ interface OGState {
   setAdvanced: (
     advanced: Partial<Pick<OGState, "fontFamily" | "fontSize" | "layout">>
   ) => void;
+  toggleFavoriteBackground: (backgroundId: string) => void;
+  clearFavoriteBackgrounds: () => void;
+  setFavoritesUserKey: (userKey: string | null) => void;
+  setFavoriteBackgroundIds: (ids: string[]) => void;
   setUI: (
     ui: Partial<
       Pick<
@@ -98,6 +106,10 @@ const defaultState = {
   fontSize: "medium" as FontSize,
   layout: "center" as Layout,
 
+  // Library
+  favoriteBackgroundIds: [] as string[],
+  favoritesUserKey: null as string | null,
+
   // UI State
   isGenerating: false,
   previewUrl: null,
@@ -127,9 +139,69 @@ export const useStore = create<OGState>()(
         setAdvanced: (advanced) =>
           set((state) => ({ ...state, ...advanced }), false, "setAdvanced"),
 
+        toggleFavoriteBackground: (backgroundId) =>
+          set(
+            (state) => {
+              const target = backgroundId.trim();
+              if (!target) {
+                return state;
+              }
+
+              const exists = state.favoriteBackgroundIds.includes(target);
+              const favoriteBackgroundIds = exists
+                ? state.favoriteBackgroundIds.filter((id) => id !== target)
+                : [...state.favoriteBackgroundIds, target];
+
+              return {
+                ...state,
+                favoriteBackgroundIds,
+              };
+            },
+            false,
+            "toggleFavoriteBackground"
+          ),
+
+        clearFavoriteBackgrounds: () =>
+          set(
+            (state) => ({
+              ...state,
+              favoriteBackgroundIds: [],
+            }),
+            false,
+            "clearFavoriteBackgrounds"
+          ),
+
+        setFavoritesUserKey: (userKey) =>
+          set(
+            (state) => ({
+              ...state,
+              favoritesUserKey: userKey,
+            }),
+            false,
+            "setFavoritesUserKey"
+          ),
+
+        setFavoriteBackgroundIds: (ids) =>
+          set(
+            (state) => ({
+              ...state,
+              favoriteBackgroundIds: ids,
+            }),
+            false,
+            "setFavoriteBackgroundIds"
+          ),
+
         setUI: (ui) => set((state) => ({ ...state, ...ui }), false, "setUI"),
 
-        reset: () => set(defaultState, false, "reset"),
+        reset: () =>
+          set(
+            (state) => ({
+              ...defaultState,
+              favoriteBackgroundIds: state.favoriteBackgroundIds,
+            }),
+            false,
+            "reset"
+          ),
 
         loadTemplate: (templateId) =>
           set(
@@ -178,6 +250,8 @@ export const useStore = create<OGState>()(
           fontFamily: state.fontFamily,
           fontSize: state.fontSize,
           layout: state.layout,
+          favoriteBackgroundIds: state.favoriteBackgroundIds,
+          favoritesUserKey: state.favoritesUserKey,
         }),
         onRehydrateStorage: () => (state) => {
           if (!state) {
@@ -239,6 +313,15 @@ export const useAdvanced = () =>
     }))
   );
 
+// Library selector
+export const useLibrary = () =>
+  useStore(
+    useShallow((state) => ({
+      favoriteBackgroundIds: state.favoriteBackgroundIds,
+      favoritesUserKey: state.favoritesUserKey,
+    }))
+  );
+
 // UI state selector
 export const useUIState = () =>
   useStore(
@@ -259,6 +342,10 @@ export const useActions = () =>
       setStyling: state.setStyling,
       setBackground: state.setBackground,
       setAdvanced: state.setAdvanced,
+      toggleFavoriteBackground: state.toggleFavoriteBackground,
+      clearFavoriteBackgrounds: state.clearFavoriteBackgrounds,
+      setFavoritesUserKey: state.setFavoritesUserKey,
+      setFavoriteBackgroundIds: state.setFavoriteBackgroundIds,
       setUI: state.setUI,
       reset: state.reset,
       loadTemplate: state.loadTemplate,

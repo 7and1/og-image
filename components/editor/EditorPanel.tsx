@@ -1,12 +1,17 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { useStore, useActions } from "@/store/useStore";
 import { Input, Textarea } from "@/components/ui";
 import { ColorPicker } from "./ColorPicker";
 import { TemplatePicker } from "./TemplatePicker";
 import { BackgroundPicker } from "./BackgroundPicker";
+import { MyTemplatesPanel } from "./MyTemplatesPanel";
 import { ChevronDown, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { MyTemplatePayload } from "@/types";
+
+const USER_KEY_STORAGE_KEY = "og-my-template-user-key";
 
 export function EditorPanel() {
   const {
@@ -21,35 +26,127 @@ export function EditorPanel() {
     backgroundId,
     backgroundImageSrc,
     overlayOpacity,
+    fontFamily,
+    fontSize,
+    layout,
     isAdvancedOpen,
   } = useStore();
 
-  const { setContent, setStyling, setBackground, setUI, reset, loadTemplate } =
-    useActions();
+  const {
+    setContent,
+    setStyling,
+    setBackground,
+    setAdvanced,
+    setUI,
+    reset,
+    loadTemplate,
+  } = useActions();
+
+  const [myTemplateUserKey, setMyTemplateUserKey] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const saved = window.localStorage.getItem(USER_KEY_STORAGE_KEY);
+    if (saved) {
+      setMyTemplateUserKey(saved);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (!myTemplateUserKey.trim()) {
+      window.localStorage.removeItem(USER_KEY_STORAGE_KEY);
+      return;
+    }
+
+    window.localStorage.setItem(USER_KEY_STORAGE_KEY, myTemplateUserKey.trim());
+  }, [myTemplateUserKey]);
+
+  const currentTemplateValues = useMemo<MyTemplatePayload>(
+    () => ({
+      title,
+      description,
+      icon,
+      template,
+      backgroundColor,
+      textColor,
+      accentColor,
+      backgroundMode,
+      backgroundId,
+      backgroundImageSrc,
+      overlayOpacity,
+      fontFamily,
+      fontSize,
+      layout,
+    }),
+    [
+      title,
+      description,
+      icon,
+      template,
+      backgroundColor,
+      textColor,
+      accentColor,
+      backgroundMode,
+      backgroundId,
+      backgroundImageSrc,
+      overlayOpacity,
+      fontFamily,
+      fontSize,
+      layout,
+    ]
+  );
+
+  const applySavedTemplate = (payload: MyTemplatePayload) => {
+    setContent({
+      title: payload.title,
+      description: payload.description,
+      icon: payload.icon,
+    });
+
+    setStyling({
+      template: payload.template,
+      backgroundColor: payload.backgroundColor,
+      textColor: payload.textColor,
+      accentColor: payload.accentColor,
+    });
+
+    setBackground({
+      backgroundMode: payload.backgroundMode,
+      backgroundId: payload.backgroundId,
+      backgroundImageSrc: payload.backgroundImageSrc,
+      overlayOpacity: payload.overlayOpacity,
+    });
+
+    setAdvanced({
+      fontFamily: payload.fontFamily,
+      fontSize: payload.fontSize,
+      layout: payload.layout,
+    });
+  };
 
   return (
     <div className="flex h-full w-full flex-shrink-0 flex-col border-r border-neutral-800 bg-neutral-900 lg:w-[380px]">
-      {/* Header */}
       <div className="flex items-center justify-between border-b border-neutral-800 px-5 py-4">
         <h2 className="text-lg font-semibold text-white">Editor</h2>
         <button
           onClick={reset}
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
+          className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
         >
           <RotateCcw className="h-3.5 w-3.5" />
           Reset
         </button>
       </div>
 
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
-        {/* Template Picker */}
-        <TemplatePicker
-          selected={template}
-          onChange={(id) => loadTemplate(id)}
-        />
+      <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5">
+        <TemplatePicker selected={template} onChange={(id) => loadTemplate(id)} />
 
-        {/* Content Section */}
         <div className="space-y-4">
           <h3 className="text-sm font-medium text-neutral-300">Content</h3>
 
@@ -57,7 +154,7 @@ export function EditorPanel() {
             label="Title"
             placeholder="Enter your title..."
             value={title}
-            onChange={(e) => setContent({ title: e.target.value })}
+            onChange={(event) => setContent({ title: event.target.value })}
             maxLength={80}
           />
 
@@ -65,7 +162,7 @@ export function EditorPanel() {
             label="Description"
             placeholder="Add a short description..."
             value={description}
-            onChange={(e) => setContent({ description: e.target.value })}
+            onChange={(event) => setContent({ description: event.target.value })}
             maxLength={200}
             showCount
             rows={3}
@@ -75,12 +172,11 @@ export function EditorPanel() {
             label="Icon / Emoji"
             placeholder="⚡"
             value={icon}
-            onChange={(e) => setContent({ icon: e.target.value })}
+            onChange={(event) => setContent({ icon: event.target.value })}
             hint="Use an emoji or short text"
           />
         </div>
 
-        {/* Colors Section */}
         <div className="space-y-4">
           <h3 className="text-sm font-medium text-neutral-300">Colors</h3>
 
@@ -103,7 +199,6 @@ export function EditorPanel() {
           />
         </div>
 
-        {/* Background Section */}
         <div className="space-y-4">
           <h3 className="text-sm font-medium text-neutral-300">Background</h3>
 
@@ -137,17 +232,23 @@ export function EditorPanel() {
             }}
           />
 
-          <p className="text-xs text-neutral-500 leading-relaxed">
+          <p className="text-xs leading-relaxed text-neutral-500">
             Selected mode: <span className="text-neutral-300">{backgroundMode}</span>
           </p>
         </div>
 
-        {/* Advanced Options (Collapsible) */}
+        <MyTemplatesPanel
+          userKey={myTemplateUserKey}
+          onUserKeyChange={setMyTemplateUserKey}
+          values={currentTemplateValues}
+          onApply={applySavedTemplate}
+        />
+
         <div className="border-t border-neutral-800 pt-4">
           <button
             type="button"
             onClick={() => setUI({ isAdvancedOpen: !isAdvancedOpen })}
-            className="flex w-full items-center justify-between py-2 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
+            className="flex w-full items-center justify-between py-2 text-sm font-medium text-neutral-300 transition-colors hover:text-white"
           >
             Advanced Options
             <ChevronDown
@@ -159,8 +260,7 @@ export function EditorPanel() {
           </button>
 
           {isAdvancedOpen && (
-            <div className="mt-3 space-y-4 animate-slide-up">
-              {/* Gradient input for advanced users */}
+            <div className="mt-3 animate-slide-up space-y-4">
               <div className="space-y-1.5">
                 <label className="block text-xs font-medium text-neutral-400">
                   Custom Background (CSS)
@@ -168,8 +268,8 @@ export function EditorPanel() {
                 <Textarea
                   placeholder="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
                   value={backgroundColor}
-                  onChange={(e) =>
-                    setStyling({ backgroundColor: e.target.value })
+                  onChange={(event) =>
+                    setStyling({ backgroundColor: event.target.value })
                   }
                   rows={2}
                   className="font-mono text-xs"
@@ -183,15 +283,14 @@ export function EditorPanel() {
         </div>
       </div>
 
-      {/* Gradient presets */}
       <div className="border-t border-neutral-800 p-4">
-        <label className="block text-xs font-medium text-neutral-400 mb-2">
+        <label className="mb-2 block text-xs font-medium text-neutral-400">
           Quick Gradients
         </label>
         <div className="grid grid-cols-6 gap-2">
-          {gradientPresets.map((gradient, i) => (
+          {gradientPresets.map((gradient, index) => (
             <button
-              key={i}
+              key={index}
               type="button"
               onClick={() => setStyling({ backgroundColor: gradient })}
               className={cn(
@@ -201,7 +300,7 @@ export function EditorPanel() {
                   : "border-neutral-700"
               )}
               style={{ background: gradient }}
-              title={`Gradient ${i + 1}`}
+              title={`Gradient ${index + 1}`}
             />
           ))}
         </div>
